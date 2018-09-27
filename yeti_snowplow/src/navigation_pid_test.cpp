@@ -2,7 +2,7 @@
 #include "geometry_msgs/Pose2D.h"
 #include "geometry_msgs/Twist.h"
 #include "std_msgs/Float64.h"
-#include "isc_shared/drive_mode.h"
+#include "isc_shared_msgs/drive_mode.h"
 #include "yeti_snowplow/location_point.h"
 #include "yeti_snowplow/target.h"
 #include "yeti_snowplow/waypoint.h"

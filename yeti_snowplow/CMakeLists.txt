@@ -9,13 +9,13 @@ add_compile_options("-std=c++11")
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  joy
   roscpp
   std_msgs
   message_generation
-  laser_geometry
   sensor_msgs
-  isc_shared
+  isc_joy
+  isc_roboteq_hdc2460
+  isc_shared_msgs
   isc_sick
 )
 
@@ -83,7 +83,8 @@ generate_messages(
   DEPENDENCIES
   std_msgs  # Or other packages containing msgs
   sensor_msgs
-  isc_shared
+  isc_joy
+  isc_shared_msgs
 )
 
 ################################################
@@ -118,7 +119,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES yeti_snowplow
-  CATKIN_DEPENDS joy roscpp std_msgs message_runtime laser_geometry sensor_msgs isc_shared isc_sick
+  CATKIN_DEPENDS roscpp std_msgs message_runtime sensor_msgs isc_joy isc_roboteq_hdc2460 isc_shared_msgs isc_sick
 #  DEPENDS system_lib
 )
 
@@ -199,10 +200,6 @@ target_link_libraries(obstacle_reaction ${catkin_LIBRARIES})
 add_executable(yeti_waypoint_selection src/yeti_waypoint_selection.cpp)
 add_dependencies(yeti_waypoint_selection ${PROJECT_NAME}_generate_messages_cpp)
 target_link_libraries(yeti_waypoint_selection ${catkin_LIBRARIES})
-
-#add_executable(yeti_scan_to_xy src/yeti_scan_to_xy_node.cpp)
-#add_dependencies(yeti_scan_to_xy ${PROJECT_NAME}_generate_messages_cpp)
-#target_link_libraries(yeti_scan_to_xy ${catkin_LIBRARIES})
 
 add_executable(localization_node src/localization_node.cpp)
 add_dependencies(localization_node ${PROJECT_NAME}_generate_messages_cpp)

@@ -3,7 +3,6 @@
 #include <math.h>
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/PointCloud.h>
-#include <laser_geometry/laser_geometry.h>
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/Pose2D.h>
 #include <yeti_snowplow/obstacle.h>

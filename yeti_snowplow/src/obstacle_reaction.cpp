@@ -10,7 +10,6 @@
 #include <yeti_snowplow/target.h>
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/PointCloud.h>
-#include <laser_geometry/laser_geometry.h>
 #include <yeti_snowplow/waypoint.h>
 #include "buffer.h"
 #include <math.h>
@@ -84,10 +83,6 @@ public:
 	
 		//Projecting LaserScanData to PointCloudData
 		newLidarDataRecieved = true;
-		// laser_geometry::LaserProjection projector_;
-		// sensor_msgs::PointCloud cloudData;
-		// projector_.projectLaser(*scannedData, cloudData);
-		// lidarData = cloudData.points;
 		lidarData = scannedData->ranges;
         lidarDataAngularResolution = scannedData->angle_increment; //radians
 	}
