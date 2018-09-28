@@ -3,7 +3,7 @@
 #include "geometry_msgs/Twist.h"
 #include "std_msgs/Bool.h"
 #include "std_msgs/Float64.h"
-#include "isc_shared/drive_mode.h"
+#include "isc_shared_msgs/drive_mode.h"
 #include "yeti_snowplow/location_point.h"
 #include "yeti_snowplow/target.h"
 #include "yeti_snowplow/waypoint.h"
@@ -75,7 +75,7 @@ void initPID(){
 	pErr = iErr = dErr = 0;
 }
 
-void driveModeCallback(const isc_shared::drive_mode::ConstPtr& msg){
+void driveModeCallback(const isc_shared_msgs::drive_mode::ConstPtr& msg){
 	isAutoMode = false;
 	if(msg->mode == "auto"){
 		isAutoMode = true;

@@ -1,8 +1,8 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Twist.h"
-#include "isc_shared/drive_mode.h"
-#include "isc_shared/wheel_speeds.h"
-#include "isc_shared/xinput.h"
+#include "isc_joy/xinput.h"
+#include "isc_shared_msgs/drive_mode.h"
+#include "isc_shared_msgs/wheel_speeds.h"
 
 #include <sstream>
 #include <string>
@@ -18,18 +18,18 @@ int speedBoostButton = false;
 void updateDriveMode(){
 	ROS_INFO("Drive Mode Control: Switching to %s mode.", autoMode ? "AUTO" : "MANUAL");
 	if(autoMode){
-		isc_shared::drive_mode msg;
+		isc_shared_msgs::drive_mode msg;
 		msg.mode = "auto";
 		driveModePub.publish(msg);
 	}
 	else {
-		isc_shared::drive_mode msg;
+		isc_shared_msgs::drive_mode msg;
 		msg.mode = "manual";
 		driveModePub.publish(msg);
 	}
 }
 
-void joystickCallback(const isc_shared::xinput::ConstPtr& joy){	
+void joystickCallback(const isc_joy::xinput::ConstPtr& joy){	
 	/* This fires every time a button is pressed/released
 	and when an axis changes (even if it doesn't leave the
 	deadzone). */
@@ -61,7 +61,7 @@ void manualCallback(const geometry_msgs::Twist::ConstPtr& msg){
             rightWheelSpeed = (msg->linear.x + msg->angular.z)/2;
         }
 
-		isc_shared::wheel_speeds msg;
+		isc_shared_msgs::wheel_speeds msg;
 		msg.left = leftWheelSpeed;
 		msg.right =  rightWheelSpeed;
 		wheelSpeedPub.publish(msg);
@@ -75,7 +75,7 @@ void autoCallback(const geometry_msgs::Twist::ConstPtr& msg){
 		leftWheelSpeed = (msg->linear.x - msg->angular.z);
 		rightWheelSpeed = (msg->linear.x + msg->angular.z);
 
-		isc_shared::wheel_speeds msg;
+		isc_shared_msgs::wheel_speeds msg;
 		msg.left = leftWheelSpeed;
 		msg.right =  rightWheelSpeed;
 		wheelSpeedPub.publish(msg);
@@ -87,12 +87,12 @@ int main(int argc, char **argv){
 
 	ros::NodeHandle n;
 
-	driveModePub = n.advertise<isc_shared::drive_mode>("yeti/drive_mode", 1000, true);
-	wheelSpeedPub = n.advertise<isc_shared::wheel_speeds>("motors/wheel_speeds", 5);
+	driveModePub = n.advertise<isc_shared_msgs::drive_mode>("yeti/drive_mode", 1000, true);
+	wheelSpeedPub = n.advertise<isc_shared_msgs::wheel_speeds>("motors/wheel_speeds", 5);
 
 	updateDriveMode();
 
-	ros::Subscriber joystickSub = n.subscribe("/joystick/xbox360", 5, joystickCallback);
+	ros::Subscriber joystickSub = n.subscribe("/joystick/xinput", 5, joystickCallback);
 	ros::Subscriber manualSub = n.subscribe("manual_control", 5, manualCallback);
 	ros::Subscriber autoSub = n.subscribe("auto_control", 5, autoCallback);
 
