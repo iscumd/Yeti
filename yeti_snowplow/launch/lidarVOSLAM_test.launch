@@ -6,6 +6,8 @@
 		<param name="frame_id" value="sick_laser_link" />
 		<param name="use_tf_correction" value="true" />
 	</node>
+	<node pkg="zenith_localization" name="zenith_localization" type="zenith_localizer">
+</node>
 	<include file="$(find yeti_snowplow)/launch/zed.launch">
     	<arg name="publish_map_tf" value="false" />
    		<arg name="base_frame" value="base_link" />
