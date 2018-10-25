@@ -1,0 +1,27 @@
+<launch>
+  <node pkg="apriltags_ros" type="apriltag_detector_node" name="apriltag_detector" output="screen">
+    <!-- Remap topic required by the node to custom topics -->
+    <remap from="image_rect" to="/zed/rgb/image_raw_color" />
+    <remap from="camera_info" to="/zed/rgb/camera_info" />
+    <remap from="/tag_detections" to="/zenith/tag_detections" />
+
+    <!-- Optional: Subscribe to the compressed stream-->
+    <param name="image_transport" type="str" value="compressed" />
+
+    <!-- Select the tag family: 16h5, 25h7, 25h9, 36h9, or 36h11(default) -->
+    <param name="tag_family" type="str" value="16h5" />
+
+    <!-- Enable projected optical measurements for more accurate tag transformations -->
+    <!-- This exists for backwards compatability and should be left true for new setups -->
+    <param name="projected_optics" type="bool" value="true" />
+
+    <!-- Describe the tags -->
+    <rosparam param="tag_descriptions">[
+      {id: 0, size: 0.163513, x: 0.5,  y: -2.5, z: -0.75, qx: 0.9238795325112867,  qy: 0.0, qz: -0.3826834323650897, qw: 0.0},
+      {id: 1, size: 0.163513, x: 14.5, y: -2.5, z: -0.75, qx: 0.38268343236508983, qy: 0.0, qz: -0.9238795325112866, qw: 0.0},
+      {id: 2, size: 0.163513, x: 14.5, y: 2.5,  z: -0.75, qx: 0.38268343236508983, qy: 0.0, qz: 0.9238795325112866,  qw: 0.0},
+      {id: 3, size: 0.163513, x: 0.5,  y: 2.5,  z: -0.75, qx: 0.9238795325112867,  qy: 0.0, qz: 0.3826834323650897,  qw: 0.0}]
+    </rosparam>
+  </node>
+  <node name="zenith_localizer" pkg="zenith_localization" type="zenith_localizer"/>
+</launch>

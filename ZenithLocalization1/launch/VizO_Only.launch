@@ -1,0 +1,3 @@
+<launch>
+  <node name="zenith_localizer" pkg="zenith_localization" type="zenith_localizer"/>
+</launch>
