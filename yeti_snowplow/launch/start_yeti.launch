@@ -1,10 +1,10 @@
 <launch>
 	<!-- Joystick -->
-	<!-- <node pkg="joy" type="joy_node" name="joy_node" />
+	<node pkg="joy" type="joy_node" name="joy_node" />
 	<node pkg="isc_joy" type="joystick_xbox360" name="joystick_xbox360"/>
 	<param name="manual_control_speed_multiplier" value="0.3" />
 	<param name="manual_control_turn_multiplier" value="0.4" />
-	<node pkg="isc_joy" type="manual_control" name="manual_control"/> -->
+	<node pkg="isc_joy" type="manual_control" name="manual_control"/>
 
 	<!-- === Yeti Main === -->
 	<!-- LiDAR -->
@@ -14,14 +14,11 @@
 		<param name="frame_id" value="sick_laser_link" />
 	</node>
 	<!-- Obstacle Detection -->
-	<!-- <node pkg="yeti_snowplow" type="yeti_scan_to_xy" name="yeti_scan_to_xy" output="screen" /> -->
 	<!-- <node pkg="yeti_snowplow" type="obstacle_detection" name="obstacle_detection" output="screen" /> -->
 	<!-- Localization -->
-	<!-- <param name="localizaion_landmark_location_file" value="$(find yeti_snowplow)/data/landmark_locations_Qualification.txt" /> -->
-	<!-- <node pkg="localization_lidar_odom" type="localization_lidar_odom.py" name="localization_lidar_odom" output="screen" /> -->
-	<node pkg="localization_lidar_odom" type="main.py" name="detection_and_localization_lidar_odom" output="screen" />
+	<!-- put gmapping stuff here -->
 	<!-- Obstacle Reactance -->
-	<node pkg="yeti_snowplow" type="obstacle_reaction" name="obstacle_reaction" output="screen" />
+	<!-- <node pkg="yeti_snowplow" type="obstacle_reaction" name="obstacle_reaction" output="screen" /> -->
 	<!-- Waypoint -->
 	<param name="navigationFile" value="$(find yeti_snowplow)/data/test1.txt" />
 	<node pkg="yeti_snowplow" type="yeti_waypoint_selection" name="yeti_waypoint_selection" output="screen" />
@@ -34,10 +31,9 @@
 	<node pkg="yeti_snowplow" type="auto_control_logic" name="auto_control_logic" output="screen" />
 	
 	<!-- Drive Mode Control -->
-	<!-- <node pkg="yeti_snowplow" type="yeti_drive_mode_control" name="yeti_drive_mode_control" output="screen"/> -->
+	<node pkg="yeti_snowplow" type="yeti_drive_mode_control" name="yeti_drive_mode_control" />
 
 	<!-- Roboteq -->
-	<!-- <param name="serial_port" value="/dev/ttyUSB0" />
-	<node pkg="isc_roboteq_hdc2460" type="roboteq_hdc2460" name="roboteq" output="screen"/> -->
-
+	<param name="serial_port" value="/dev/ttyUSB0" />
+	<node pkg="isc_roboteq_hdc2460" type="roboteq_hdc2460" name="roboteq" />
 </launch>
