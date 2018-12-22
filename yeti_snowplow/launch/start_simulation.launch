@@ -1,8 +1,22 @@
 <launch>
 
+	<!-- Joystick -->
+	<node pkg="joy" type="joy_node" name="joy_node" />
+	<node pkg="isc_joy" type="joystick_xbox360" name="joystick_xbox360"/>
+	<param name="manual_control_speed_multiplier" value="0.3" />
+	<param name="manual_control_turn_multiplier" value="0.6" />
+	<node pkg="isc_joy" type="manual_control" name="manual_control"/>
+
+	<!-- Auto Control Logic -->
+	<param name="auto_control_logic_enable_logging" value="false" />
+	<node pkg="yeti_snowplow" type="auto_control_logic" name="auto_control_logic" output="screen" />
+
+	<!-- Drive Mode Control -->
+	<node pkg="yeti_snowplow" type="yeti_drive_mode_control" name="yeti_drive_mode_control" />
+	<remap from="yeti/cmd_vel" to="manual_control"/>
 	<!-- Start Gazebo Simulation -->
 	<include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find yeti_snowplow)/srv/single-I_with_snow.sdf"/> 
+    <arg name="world_name" value="$(find yeti_snowplow)/srv/single-I_with_snow.sdf"/>
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
     <arg name="gui" value="true"/>
