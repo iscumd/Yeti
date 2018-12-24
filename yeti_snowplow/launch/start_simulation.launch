@@ -26,6 +26,13 @@
     <arg name="debug" value="false"/>
   </include>
 
+	<node pkg="tf" type="static_transform_publisher" name="static_transform_publisher_zed" args="0 0 0 0 0 0 base_link zed_camera_center 10" />
+	<node pkg="tf" type="static_transform_publisher" name="static_transform_publisher_sick_laser_link" args="0.33 0 0.75 0 0 0 base_link sick_laser_link 10" />
+
+	<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
+		<param name="map_update_interval" value="2.0" />
+	</node>
+
 	<!-- <node pkg="zenith_localization" name="zenith_localization" type="zenith_localizer"></node>
 	<node pkg="pose_publisher" name="pose_publisher" type="pose_publisher_node"></node>
 
@@ -34,8 +41,7 @@
 		<arg name="base_frame" value="base_link" />
 	</include>
 
-	<node pkg="tf" type="static_transform_publisher" name="static_transform_publisher_zed" args="0 0 0 0 0 0 base_link zed_camera_center 10" />
-	<node pkg="tf" type="static_transform_publisher" name="static_transform_publisher_sick_laser_link" args="0 0 0 0 0 0 base_link sick_laser_link 10" />
+
 
 	<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
 		<param name="map_update_interval" value="2.0" />

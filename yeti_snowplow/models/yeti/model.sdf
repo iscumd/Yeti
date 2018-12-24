@@ -247,7 +247,7 @@
       <robotBaseFrame>base_link</robotBaseFrame>
       <torque>60</torque>
       <topicName>cmd_vel</topicName>
-      <broadcastTF>false</broadcastTF>
+      <broadcastTF>true</broadcastTF>
     </plugin>
   </model>
 </sdf>
