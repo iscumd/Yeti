@@ -14,7 +14,9 @@
 	<!-- Drive Mode Control -->
 	<node pkg="yeti_snowplow" type="yeti_drive_mode_control" name="yeti_drive_mode_control" />
 	<remap from="yeti/cmd_vel" to="manual_control"/>
-	<!-- Start Gazebo Simulation -->
+
+<!-- Start Gazebo Simulation -->
+	<param name="use_sim_time" value="true" />
 	<include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find yeti_snowplow)/srv/single-I_with_snow.sdf"/>
     <arg name="paused" value="false"/>
