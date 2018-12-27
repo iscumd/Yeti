@@ -25,21 +25,22 @@
     <arg name="recording" value="false"/>
     <arg name="debug" value="false"/>
   </include>
-
+<!-- Static Transforms -->
 	<node pkg="tf" type="static_transform_publisher" name="static_transform_publisher_zed" args="0 0 0 0 0 0 base_link zed_camera_center 10" />
 	<node pkg="tf" type="static_transform_publisher" name="static_transform_publisher_sick_laser_link" args="0.33 0 0.75 0 0 0 base_link sick_laser_link 10" />
-	
+<!-- Localization-->
 	<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
 		<param name="map_update_interval" value="2.0" />
 	</node>
-
-
 	<node pkg="pose_publisher" name="pose_publisher" type="pose_publisher_node"></node>
 	<node pkg="state_publisher" name="state_publisher" type="state_publisher_node"></node>
+
+<!-- PID Controller -->
+	<node pkg="control_publisher" name="control_publisher" type="control_publisher_node"></node>
 	<node pkg="pid" name="linear_velocity_pid" type="controller">
-		<param name="Kp" value="5.0" />
-    <param name="Ki" value="0.0" />
-    <param name="Kd" value="0.1" />
+		<param name="Kp" value="1.0" />
+    <param name="Ki" value="0.1" />
+    <param name="Kd" value="0.0" />
 		<param name="setpoint_topic" value="linear_velocity_setpoint"/>
 		<param name="topic_from_plant" value="linear_velocity"/>
 		<param name="topic_from_controller" value="linear_control_effort"/>
@@ -50,7 +51,7 @@
     <param name="min_loop_frequency" value="100.0" />
 	</node>
 	<node pkg="pid" name="rotation_pid" type="controller">
-		<param name="Kp" value="5.0" />
+		<param name="Kp" value="2.0" />
     <param name="Ki" value="0.0" />
     <param name="Kd" value="0.1" />
 		<param name="setpoint_topic" value="rotation_setpoint"/>
@@ -61,6 +62,8 @@
     <param name="windup_limit" value="10" />
     <param name="max_loop_frequency" value="100.0" />
     <param name="min_loop_frequency" value="100.0" />
+		<param name="angle_error" value="true">
 	</node>
+	<node pkg="rostopic" type="rostopic" name="pid_enable" args="pub -r 10 /pid_enable std_msgs/Bool '{data: 1}' " output="screen"/>
 
 </launch>
