@@ -18,7 +18,7 @@
 <!-- Start Gazebo Simulation -->
 	<param name="use_sim_time" value="true" />
 	<include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find yeti_snowplow)/srv/single-I_with_snow.sdf"/>
+    <arg name="world_name" value="$(find yeti_snowplow)/srv/pid_test_world.sdf"/>
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
     <arg name="gui" value="true"/>
@@ -28,11 +28,39 @@
 
 	<node pkg="tf" type="static_transform_publisher" name="static_transform_publisher_zed" args="0 0 0 0 0 0 base_link zed_camera_center 10" />
 	<node pkg="tf" type="static_transform_publisher" name="static_transform_publisher_sick_laser_link" args="0.33 0 0.75 0 0 0 base_link sick_laser_link 10" />
-
+	
 	<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
 		<param name="map_update_interval" value="2.0" />
 	</node>
 
+
 	<node pkg="pose_publisher" name="pose_publisher" type="pose_publisher_node"></node>
+	<node pkg="state_publisher" name="state_publisher" type="state_publisher_node"></node>
+	<node pkg="pid" name="linear_velocity_pid" type="controller">
+		<param name="Kp" value="5.0" />
+    <param name="Ki" value="0.0" />
+    <param name="Kd" value="0.1" />
+		<param name="setpoint_topic" value="linear_velocity_setpoint"/>
+		<param name="topic_from_plant" value="linear_velocity"/>
+		<param name="topic_from_controller" value="linear_control_effort"/>
+    <param name="upper_limit" value="10" />
+    <param name="lower_limit" value="-10" />
+    <param name="windup_limit" value="10" />
+    <param name="max_loop_frequency" value="100.0" />
+    <param name="min_loop_frequency" value="100.0" />
+	</node>
+	<node pkg="pid" name="rotation_pid" type="controller">
+		<param name="Kp" value="5.0" />
+    <param name="Ki" value="0.0" />
+    <param name="Kd" value="0.1" />
+		<param name="setpoint_topic" value="rotation_setpoint"/>
+		<param name="topic_from_plant" value="theta_rot"/>
+		<param name="topic_from_controller" value="theta_rot_control_effort"/>
+    <param name="upper_limit" value="10" />
+    <param name="lower_limit" value="-10" />
+    <param name="windup_limit" value="10" />
+    <param name="max_loop_frequency" value="100.0" />
+    <param name="min_loop_frequency" value="100.0" />
+	</node>
 
 </launch>
