@@ -38,9 +38,9 @@
 <!-- PID Controller -->
 	<node pkg="control_publisher" name="control_publisher" type="control_publisher_node"></node>
 	<node pkg="pid" name="linear_velocity_pid" type="controller">
-		<param name="Kp" value="1.0" />
-    <param name="Ki" value="0.1" />
-    <param name="Kd" value="0.0" />
+		<param name="Kp" value="0.2" />
+    <param name="Ki" value="3.43" />
+    <param name="Kd" value="0.05145" />
 		<param name="setpoint_topic" value="linear_velocity_setpoint"/>
 		<param name="topic_from_plant" value="linear_velocity"/>
 		<param name="topic_from_controller" value="linear_control_effort"/>
@@ -62,7 +62,7 @@
     <param name="windup_limit" value="10" />
     <param name="max_loop_frequency" value="100.0" />
     <param name="min_loop_frequency" value="100.0" />
-		<param name="angle_error" value="true">
+		<param name="angle_error" value="true"/>
 	</node>
 	<node pkg="rostopic" type="rostopic" name="pid_enable" args="pub -r 10 /pid_enable std_msgs/Bool '{data: 1}' " output="screen"/>
 
