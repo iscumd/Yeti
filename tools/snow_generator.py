@@ -12,7 +12,7 @@ field_end_x = 6
 field_end_y = 7
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Let it snow")
+    parser = argparse.ArgumentParser(description="Let it snow (Disney&)")
     parser.add_argument("CL", type=float, help="collision length")
     parser.add_argument("VL", type=float, help="visual length")
     parser.add_argument("CR", type=float, help="collision radius")

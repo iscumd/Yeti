@@ -18,8 +18,8 @@
 <!-- Start Gazebo Simulation -->
 	<param name="use_sim_time" value="true" />
 	<include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find yeti_snowplow)/srv/pid_test_world.sdf"/>
-    <arg name="paused" value="false"/>
+    <arg name="world_name" value="$(find yeti_snowplow)/srv/single-I.sdf"/>
+    <arg name="paused" value="true"/>
     <arg name="use_sim_time" value="true"/>
     <arg name="gui" value="true"/>
     <arg name="recording" value="false"/>
@@ -65,5 +65,8 @@
 		<param name="angle_error" value="true"/>
 	</node>
 	<node pkg="rostopic" type="rostopic" name="pid_enable" args="pub -r 10 /pid_enable std_msgs/Bool '{data: 1}' " output="screen"/>
+
+<!-- Guidance -->
+<node pkg="path_tracking" name="waypoint_follower" type="path_tracking_node"></node>
 
 </launch>

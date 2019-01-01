@@ -1,6 +1,6 @@
-#include "ros/ros.h"
-#include "std_msgs/String.h"
-#include "turtlesim/Pose.h"
+#include <ros/ros.h>
+#include <std_msgs/Float64.h>
+#include <geometry_msgs/Pose2D.h>
 #include <geometry_msgs/Twist.h>
 #include <vector>
 #include <math.h>
@@ -12,6 +12,7 @@ struct WayPoint
 
 std::vector<WayPoint> waypoints;
 ros::Publisher vel_pub;
+ros::Publisher rot_pub;
 
 float ang_diff(float th1, float th2)
 {
@@ -39,7 +40,7 @@ float chop(float x, float xmin, float xmax)
     }
 }
 
-void PoseTrackerCallback(const turtlesim::Pose::ConstPtr &msg)
+void PoseTrackerCallback(const geometry_msgs::Pose2D::ConstPtr &msg)
 {
     //ROS_INFO("I heard: [%f]", msg->x);
     float linear_tune = .5;
@@ -54,20 +55,27 @@ void PoseTrackerCallback(const turtlesim::Pose::ConstPtr &msg)
     float v = chop(1.0 / (linear_tune * abs(ang_err) + .000000001), 0.0, 2);
     // w = 10;
     // float v = chop(0.1 + distance(waypoints[curr_waypoint].x, waypoints[curr_waypoint].y, msg->x,msg->y), 0.0, 10);
-    geometry_msgs::Twist vel;
-    vel.linear.x = v;
-    vel.angular.z = w;
+    // geometry_msgs::Twist vel;
+    std_msgs::Float64 vel, rot, zero;
+    vel.data = v;
+    rot.data = heading_th;
+    zero.data = 0;
+    // vel.linear.x = v;
+    // vel.angular.z = w;
     if (distance(waypoints[curr_waypoint].x,  waypoints[curr_waypoint].y, msg->x, msg->y) > .8)
     {
         vel_pub.publish(vel);
+        rot_pub.publish(rot);
     }
     else
     {
+      vel_pub.publish(zero);
+      rot_pub.publish(zero);
         if(curr_waypoint < waypoints.size()-1)
         {
                 curr_waypoint++;
         }
-        
+
     }
 }
 
@@ -75,12 +83,14 @@ int main(int argc, char **argv)
 {
     waypoints.push_back({0, 0}); //waypoints for turtlesim
 
-    waypoints.push_back({9, 1});
-    waypoints.push_back({5, 5});
+    waypoints.push_back({5.5, 0});
+    waypoints.push_back({-6.5, 0});
     ros::init(argc, argv, "listener");
     ros::NodeHandle n;
-    vel_pub = n.advertise<geometry_msgs::Twist>("/turtle1/cmd_vel", 10);
-    ros::Subscriber pose_sub = n.subscribe("/turtle1/pose", 100, PoseTrackerCallback);
+    vel_pub = n.advertise<std_msgs::Float64>("linear_velocity_setpoint", 1);
+    rot_pub = n.advertise<std_msgs::Float64>("rotation_setpoint", 1);
+
+    ros::Subscriber pose_sub = n.subscribe("yeti/pose", 1, PoseTrackerCallback);
 
     ros::spin();
 
