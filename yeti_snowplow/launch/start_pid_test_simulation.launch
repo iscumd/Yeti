@@ -40,13 +40,13 @@
 	<node pkg="pid" name="linear_velocity_pid" type="controller">
 		<param name="Kp" value="0.2" />
     <param name="Ki" value="3.43" />
-    <param name="Kd" value="0.05145" />
+    <param name="Kd" value="0.0" />
 		<param name="setpoint_topic" value="linear_velocity_setpoint"/>
 		<param name="topic_from_plant" value="linear_velocity"/>
 		<param name="topic_from_controller" value="linear_control_effort"/>
-    <param name="upper_limit" value="10" />
-    <param name="lower_limit" value="-10" />
-    <param name="windup_limit" value="10" />
+    <param name="upper_limit" value="1" />
+    <param name="lower_limit" value="-1" />
+    <param name="windup_limit" value="1" />
     <param name="max_loop_frequency" value="100.0" />
     <param name="min_loop_frequency" value="100.0" />
 	</node>
