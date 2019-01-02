@@ -17,15 +17,27 @@ if __name__ == '__main__':
     parser.add_argument("VL", type=float, help="visual length")
     parser.add_argument("CR", type=float, help="collision radius")
     parser.add_argument("VR", type=float, help="visual radius")
+    parser.add_argument("length", type=float, help="field length")
+    parser.add_argument("width", type=float, help="field width")
+    parser.add_argument("start_x", type=float, help="bottom left corner x")
+    parser.add_argument("start_y", type=float, help="bottom left corner y")
     args = parser.parse_args()
+
+    field_start_x = args.start_x
+    field_start_y = args.start_y
+    field_end_x = args.start_x + args.length
+    field_end_y = args.start_y + args.width
 
     root = ET.Element("sdf")
     root.set("version", "1.6")
     world = ET.SubElement(root, "world")
     world.set("name", "default")
 
-    for x in range(field_start_x, field_end_x, 1):
-        for y in range(field_start_y, field_end_y, 1):
+    step = args.CR
+    x = field_start_x
+    while (x < field_end_x):
+        y = field_start_y
+        while (y < field_end_y):
             #setup stuff for making several snow pucks
             model = ET.SubElement(world, "model")
             model.set("name", "snowpart_" + str(x) + "-" + str(y))
@@ -57,6 +69,8 @@ if __name__ == '__main__':
             self_collide.text = "0"
             kinematic = ET.SubElement(link, "kinematic")
             kinematic.text = "0"
+            y += step
+        x += step
 
     tree = ET.ElementTree(root)
     tree.write(output_file)
