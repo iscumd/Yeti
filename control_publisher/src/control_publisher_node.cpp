@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
 
     ros::NodeHandle n;
 
-    ros::Publisher control_pub = n.advertise<geometry_msgs::Twist>("yeti/cmd_vel", 1);
+    ros::Publisher control_pub = n.advertise<geometry_msgs::Twist>("/auto_control", 1);
     control_effort.linear.x = 0;
     control_effort.angular.z = 0;
 

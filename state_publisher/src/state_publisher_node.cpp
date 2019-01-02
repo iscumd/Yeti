@@ -39,7 +39,7 @@ int main(int argc, char** argv){
   angularPub = n.advertise<std_msgs::Float64>("angular_velocity", 1);
   anglePub = n.advertise<std_msgs::Float64>("theta_rot",1);
 
-  ros::Subscriber odomSub = n.subscribe("yeti/odom", 1, odomCallback);
+  ros::Subscriber odomSub = n.subscribe("odom", 1, odomCallback);
   ros::Subscriber poseSub = n.subscribe("yeti/pose",1,poseCallback);
 
   ros::spin();

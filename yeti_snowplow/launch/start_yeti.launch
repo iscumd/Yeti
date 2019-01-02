@@ -13,6 +13,52 @@
 		<param name="host" value="$(arg host)" />
 		<param name="frame_id" value="sick_laser_link" />
 	</node>
+
+<!-- Static Transforms -->
+	<node pkg="tf" type="static_transform_publisher" name="static_transform_publisher_zed" args="0 0 0 0 0 0 base_link zed_camera_center 10" />
+	<node pkg="tf" type="static_transform_publisher" name="static_transform_publisher_sick_laser_link" args="0.33 0 0.75 0 0 0 base_link sick_laser_link 10" />
+<!-- Localization-->
+	<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
+		<param name="map_update_interval" value="2.0" />
+	</node>
+	<node pkg="pose_publisher" name="pose_publisher" type="pose_publisher_node"></node>
+	<node pkg="state_publisher" name="state_publisher" type="state_publisher_node"></node>
+
+<!-- PID Controller -->
+	<node pkg="control_publisher" name="control_publisher" type="control_publisher_node"></node>
+	<node pkg="pid" name="linear_velocity_pid" type="controller">
+		<param name="Kp" value="0.2" />
+    <param name="Ki" value="3.43" />
+    <param name="Kd" value="0.0" />
+		<param name="setpoint_topic" value="linear_velocity_setpoint"/>
+		<param name="topic_from_plant" value="linear_velocity"/>
+		<param name="topic_from_controller" value="linear_control_effort"/>
+    <param name="upper_limit" value="1" />
+    <param name="lower_limit" value="-1" />
+    <param name="windup_limit" value="1" />
+    <param name="max_loop_frequency" value="100.0" />
+    <param name="min_loop_frequency" value="100.0" />
+	</node>
+	<node pkg="pid" name="rotation_pid" type="controller">
+		<param name="Kp" value="10.0" />
+    <param name="Ki" value="10.0" />
+    <param name="Kd" value="0.0" />
+		<param name="setpoint_topic" value="rotation_setpoint"/>
+		<param name="topic_from_plant" value="theta_rot"/>
+		<param name="topic_from_controller" value="theta_rot_control_effort"/>
+    <param name="upper_limit" value="10" />
+    <param name="lower_limit" value="-10" />
+    <param name="windup_limit" value="10" />
+    <param name="max_loop_frequency" value="100.0" />
+    <param name="min_loop_frequency" value="100.0" />
+		<param name="angle_error" value="true"/>
+	</node>
+	<node pkg="rostopic" type="rostopic" name="pid_enable" args="pub -r 10 /pid_enable std_msgs/Bool '{data: 1}' " output="screen"/>
+
+<!-- Guidance -->
+	<node pkg="path_tracking" name="waypoint_follower" type="path_tracking_node"></node>
+
+
 	<!-- Obstacle Detection -->
 	<!-- <node pkg="yeti_snowplow" type="obstacle_detection" name="obstacle_detection" output="screen" /> -->
 	<!-- Localization -->
@@ -20,12 +66,12 @@
 	<!-- Obstacle Reactance -->
 	<!-- <node pkg="yeti_snowplow" type="obstacle_reaction" name="obstacle_reaction" output="screen" /> -->
 	<!-- Waypoint -->
-	<param name="navigationFile" value="$(find yeti_snowplow)/data/test1.txt" />
-	<node pkg="yeti_snowplow" type="yeti_waypoint_selection" name="yeti_waypoint_selection" output="screen" />
+	<!-- <param name="navigationFile" value="$(find yeti_snowplow)/data/test1.txt" />
+	<node pkg="yeti_snowplow" type="yeti_waypoint_selection" name="yeti_waypoint_selection" output="screen" /> -->
 	<!-- Navigation PID -->
-	<node pkg="yeti_snowplow" type="navigation_pid_speed" name="navigation_pid_speed" output="screen" />
+	<!-- <node pkg="yeti_snowplow" type="navigation_pid_speed" name="navigation_pid_speed" output="screen" />
 	<node pkg="yeti_snowplow" type="navigation_pid_turn" name="navigation_pid_turn" output="screen" />
-	<node pkg="yeti_snowplow" type="navigation_pid_velocity" name="navigation_pid_velocity" output="screen" />
+	<node pkg="yeti_snowplow" type="navigation_pid_velocity" name="navigation_pid_velocity" output="screen" /> -->
 	<!-- Auto Control Logic -->
 	<param name="auto_control_logic_enable_logging" value="false" />
 	<node pkg="yeti_snowplow" type="auto_control_logic" name="auto_control_logic" output="screen" />
