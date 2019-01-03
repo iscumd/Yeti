@@ -52,7 +52,7 @@ void PoseTrackerCallback(const geometry_msgs::Pose2D::ConstPtr &msg)
     float ang_err = ang_diff(heading_th, msg->theta);
     std::cout << ang_err << std::endl;
     float w = chop(angular_tune * ang_err, -5, 5);
-    float v = chop(1.0 / (linear_tune * abs(ang_err) + .000000001), 0.0, 2);
+    float v = chop(1.0 / (linear_tune * abs(ang_err) + .000000001), 0.0, 1);
     // w = 10;
     // float v = chop(0.1 + distance(waypoints[curr_waypoint].x, waypoints[curr_waypoint].y, msg->x,msg->y), 0.0, 10);
     // geometry_msgs::Twist vel;

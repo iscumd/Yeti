@@ -12,6 +12,7 @@
 	<node pkg="isc_sick" name="isc_sick" type="LMS1xx_node">
 		<param name="host" value="$(arg host)" />
 		<param name="frame_id" value="sick_laser_link" />
+		<param name="use_tf_correction" value="true" />
 	</node>
 
 <!-- Static Transforms -->
@@ -40,8 +41,8 @@
     <param name="min_loop_frequency" value="100.0" />
 	</node>
 	<node pkg="pid" name="rotation_pid" type="controller">
-		<param name="Kp" value="10.0" />
-    <param name="Ki" value="10.0" />
+		<param name="Kp" value="3.0" />
+    <param name="Ki" value="0.0" />
     <param name="Kd" value="0.0" />
 		<param name="setpoint_topic" value="rotation_setpoint"/>
 		<param name="topic_from_plant" value="theta_rot"/>
@@ -53,11 +54,13 @@
     <param name="min_loop_frequency" value="100.0" />
 		<param name="angle_error" value="true"/>
 	</node>
-	<node pkg="rostopic" type="rostopic" name="pid_enable" args="pub -r 10 /pid_enable std_msgs/Bool '{data: 1}' " output="screen"/>
+	<!-- <node pkg="rostopic" type="rostopic" name="pid_enable" args="pub -r 10 /pid_enable std_msgs/Bool '{data: 1}' " output="screen"/> -->
 
 <!-- Guidance -->
 	<node pkg="path_tracking" name="waypoint_follower" type="path_tracking_node"></node>
 
+	<include file="$(find zed_opencv_ros)/launch/zed_native.launch" />
+        <include file="$(find lvt)/launch/lvt_node.launch" />
 
 	<!-- Obstacle Detection -->
 	<!-- <node pkg="yeti_snowplow" type="obstacle_detection" name="obstacle_detection" output="screen" /> -->

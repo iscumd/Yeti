@@ -3,6 +3,7 @@
 #include "isc_joy/xinput.h"
 #include "isc_shared_msgs/drive_mode.h"
 #include "isc_shared_msgs/wheel_speeds.h"
+#include "std_msgs/Bool.h"
 
 #include <sstream>
 #include <string>
@@ -12,6 +13,7 @@ ros::Publisher driveModePub;
 bool startButtonDown = false;
 bool autoMode = false;
 ros::Publisher wheelSpeedPub;
+ros::Publisher pidEnablePub;
 
 int speedBoostButton = false;
 
@@ -21,11 +23,19 @@ void updateDriveMode(){
 		isc_shared_msgs::drive_mode msg;
 		msg.mode = "auto";
 		driveModePub.publish(msg);
+
+                std_msgs::Bool pidEnableMsg;
+                pidEnableMsg.data = 1;
+                pidEnablePub.publish(pidEnableMsg);
 	}
 	else {
 		isc_shared_msgs::drive_mode msg;
 		msg.mode = "manual";
 		driveModePub.publish(msg);
+
+                std_msgs::Bool pidEnableMsg;
+                pidEnableMsg.data = 0;
+                pidEnablePub.publish(pidEnableMsg);
 	}
 }
 
@@ -89,6 +99,7 @@ int main(int argc, char **argv){
 
 	driveModePub = n.advertise<isc_shared_msgs::drive_mode>("yeti/drive_mode", 1000, true);
 	wheelSpeedPub = n.advertise<isc_shared_msgs::wheel_speeds>("motors/wheel_speeds", 5);
+	pidEnablePub = n.advertise<std_msgs::Bool>("/pid_enable", 1, true);
 
 	updateDriveMode();
 
