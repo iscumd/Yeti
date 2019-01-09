@@ -36,19 +36,22 @@ int main(int argc, char **argv) {
     nav_msgs::Path path;
     path.header.frame_id = "map";
     path.header.stamp = ros::Time::now();
-    path.poses.resize(11);
+    poses.push_back(point(-7.5, 0, 0.3));
     poses.push_back(point(-6.5, 0, 0.3));
-    poses.push_back(point(0, 0, 0.3));
-    poses.push_back(point(1, 0.5, 0.3));
-    poses.push_back(point(2, 0.5, 0.3));
-    poses.push_back(point(4, 0.5, 0.3));
-    poses.push_back(point(5.5, 0, 0.3));
-    poses.push_back(point(5, -0.25, 0.3));
-    poses.push_back(point(4, -0.5, 0.3));
-    poses.push_back(point(1, -0.5, 0.3));
-    poses.push_back(point(0.5, -0.5, 0.3));
-    poses.push_back(point(-6.5, -0.5, 0.3));
-
+    poses.push_back(point(-2.5,-1,0.3));
+    poses.push_back(point(0, -1, 0.3));
+    poses.push_back(point(1, -1, 0.3));
+    poses.push_back(point(2, -1, 0.3));
+    poses.push_back(point(4, -1, 0.3));
+    poses.push_back(point(5.5, -1, 0.3));
+    poses.push_back(point(5.5, 1, 0.3));
+    poses.push_back(point(5, 1, 0.3));
+    poses.push_back(point(4, 1, 0.3));
+    poses.push_back(point(1, 1, 0.3));
+    poses.push_back(point(0.5, 1, 0.3));
+    poses.push_back(point(-6.2, 1, 0.3));
+    poses.push_back(point(-6.5, 1, 0.0));
+    path.poses.resize(poses.size());
     for (int i = 0; i < poses.size(); ++i) {
         PoseStamped p = poses.at(i);
         path.poses.at(i) = p;

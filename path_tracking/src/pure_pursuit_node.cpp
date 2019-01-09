@@ -8,7 +8,7 @@
 
 #include "pure_pursuit.h"
 
-#define DEFAULT_LOOKAHEAD_DISTANCE 5.0
+#define DEFAULT_LOOKAHEAD_DISTANCE 1.5
 #define DEFAULT_PUBLISH_HEADING_TO_POINT true
 #define DEFAULT_PUBLISH_HEADING_ERROR false
 #define DEFAULT_PUBLISH_LOOKAHEAD_POINT false
@@ -23,7 +23,7 @@ public:
         n.param<bool>("publish_heading_to_point", m_publish_heading_to_point, DEFAULT_PUBLISH_HEADING_TO_POINT);
         n.param<bool>("publish_heading_error", m_publish_heading_error, DEFAULT_PUBLISH_HEADING_ERROR);
         n.param<bool>("publish_lookahead", m_publish_lookahead_point, DEFAULT_PUBLISH_LOOKAHEAD_POINT);
-
+        m_tracker.reset_lookahead_distance(m_lookahead_distance);
         m_vel_pub = n.advertise<std_msgs::Float64>("linear_velocity_setpoint", 1);
         m_path_sub = n.subscribe("path", 1, &PurePursuitRos::receive_path, this);
         if(m_publish_heading_to_point) {
