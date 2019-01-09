@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(path_tracking)
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
+set(pure_pursuit_DIR ${CMAKE_CURRENT_LIST_DIR}/external/pure_pursuit/cmake/)
 ## Compile as C++11, supported in ROS Kinetic and newer
- add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -12,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   turtlesim
+  pure_pursuit
 )
 
 ## System dependencies are found with CMake's conventions
@@ -149,6 +151,7 @@ include_directories(
 ## Specify libraries to link a library or executable target against
  target_link_libraries(${PROJECT_NAME}_node
    ${catkin_LIBRARIES}
+
  )
 
 #############
