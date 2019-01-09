@@ -1,26 +1,19 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(path_tracking)
-set(CMAKE_BUILD_TYPE DEBUG)
-set(pure_pursuit_DIR ${CMAKE_CURRENT_LIST_DIR}/external/pure_pursuit/cmake/)
-## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+project(path_planning)
 
-add_subdirectory(external/pure_pursuit)
+## Compile as C++11, supported in ROS Kinetic and newer
+ add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-        geometry_msgs
-        nav_msgs
-        roscpp
-        std_msgs
-        turtlesim
-        tf
-        )
-
-find_package(
-        pure_pursuit REQUIRED
+  geometry_msgs
+  nav_msgs
+  roscpp
+  rospy
+  std_msgs
+  visualization_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -80,7 +73,7 @@ find_package(
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   geometry_msgs#   std_msgs
+#   geometry_msgs#   nav_msgs#   std_msgs#   visualization_msgs
 # )
 
 ################################################
@@ -113,26 +106,26 @@ find_package(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-        #  INCLUDE_DIRS include
-        #  LIBRARIES path_tracking
-        #  CATKIN_DEPENDS geometry_msgs roscpp std_msgs
-        #  DEPENDS system_lib
+#  INCLUDE_DIRS include
+#  LIBRARIES path_planning
+#  CATKIN_DEPENDS geometry_msgs nav_msgs roscpp rospy std_msgs visualization_msgs
+#  DEPENDS system_lib
 )
 
 ###########
 ## Build ##
 ###########
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-        # include
-        ${catkin_INCLUDE_DIRS}
-        external/pure_pursuit/include
+# include
+  ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/path_tracking.cpp
+#   src/${PROJECT_NAME}/path_planning.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -143,8 +136,8 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(waypoint_follower_node src/waypoint_follower_node.cpp)
-add_executable(pure_pursuit_node src/pure_pursuit_node.cpp)
+ add_executable(${PROJECT_NAME}_node src/path_planning_node.cpp)
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -156,13 +149,10 @@ add_executable(pure_pursuit_node src/pure_pursuit_node.cpp)
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(pure_pursuit_node
-        ${catkin_LIBRARIES}
-        ISC::pure_pursuit
-        )
-target_link_libraries(waypoint_follower_node
-        ${catkin_LIBRARIES}
-        )
+ target_link_libraries(${PROJECT_NAME}_node
+   ${catkin_LIBRARIES}
+ )
+
 #############
 ## Install ##
 #############
@@ -203,7 +193,7 @@ target_link_libraries(waypoint_follower_node
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_path_tracking.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_path_planning.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
