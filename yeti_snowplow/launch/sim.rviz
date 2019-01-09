@@ -9,7 +9,6 @@ Panels:
         - /Map1
         - /Odometry1
         - /RobotModel1
-        - /RobotModel1/Status1
       Splitter Ratio: 0.385350317
     Tree Height: 768
   - Class: rviz/Selection
@@ -30,7 +29,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: LaserScan
+    SyncSource: ""
 Visualization Manager:
   Class: ""
   Displays:
@@ -87,29 +86,13 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        base_link:
-          Value: true
-        map:
-          Value: true
-        odom:
-          Value: true
-        sick_laser_link:
-          Value: true
-        zed_camera_center:
-          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        map:
-          odom:
-            base_link:
-              sick_laser_link:
-                {}
-              zed_camera_center:
-                {}
+        {}
       Update Interval: 0
       Value: true
     - Alpha: 0.699999988
@@ -258,5 +241,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1855
-  X: 1985
+  X: 3905
   Y: 24

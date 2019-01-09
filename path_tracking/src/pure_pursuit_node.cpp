@@ -2,24 +2,64 @@
 #include <std_msgs/Float64.h>
 #include <nav_msgs/Path.h>
 #include <geometry_msgs/Pose2D.h>
-#include <geometry_msgs/Twist.h>
+#include <geometry_msgs/Point.h>
 #include <tf/LinearMath/Matrix3x3.h>
 #include <tf/transform_listener.h>
 
 #include "pure_pursuit.h"
 
+#define DEFAULT_LOOKAHEAD_DISTANCE 3.0
+#define DEFAULT_PUBLISH_HEADING_TO_POINT true
+#define DEFAULT_PUBLISH_HEADING_ERROR false
+#define DEFAULT_PUBLISH_LOOKAHEAD_POINT false
+
+#define PATH_AND_POINT_DIST_FROM_GROUND 1
+
 class PurePursuitRos{
 public:
-    PurePursuitRos()
+    PurePursuitRos() : m_tracker(m_path, m_lookahead_distance), m_path_is_initialized(false)
     {
+        n.param<double>("lookahead_distance", m_lookahead_distance, DEFAULT_LOOKAHEAD_DISTANCE);
+        n.param<bool>("publish_heading_to_point", m_publish_heading_to_point, DEFAULT_PUBLISH_HEADING_TO_POINT);
+        n.param<bool>("publish_heading_error", m_publish_heading_error, DEFAULT_PUBLISH_HEADING_ERROR);
+        n.param<bool>("publish_lookahead", m_publish_lookahead_point, DEFAULT_PUBLISH_LOOKAHEAD_POINT);
+
         m_vel_pub = n.advertise<std_msgs::Float64>("linear_velocity_setpoint", 1);
-        m_rot_pub = n.advertise<std_msgs::Float64>("rotation_setpoint", 1);
         m_path_sub = n.subscribe("path", 1, &PurePursuitRos::receive_path, this);
+        if(m_publish_heading_to_point) {
+            m_head_to_point_pub = n.advertise<std_msgs::Float64>("pure_pursuit/heading_to_point", 1);
+        }
+        if(m_publish_heading_error){
+            m_head_error_pub = n.advertise<std_msgs::Float64>("pure_pursuit/heading_error", 1);
+        }
+        if(m_publish_lookahead_point){
+            m_lookahead_pub = n.advertise<geometry_msgs::Point>("pure_pursuit/lookahead_point", 1);
+        }
+
     }
 
     void process()
     {
+        if(m_path_is_initialized) {
+            Point3D lookahead;
+            double heading_to_point, heading_error;
+            std::tie (lookahead, heading_to_point, heading_error) = m_tracker.get_target_state(get_pose());
+            m_vel_pub.publish(lookahead.z);
+            if(m_publish_heading_to_point) {
+                m_head_to_point_pub.publish(heading_to_point);
+            }
+            if(m_publish_heading_error) {
+                m_head_error_pub.publish(heading_error);
+            }
+            if(m_publish_lookahead_point){
+                geometry_msgs::Point lookahead_point;
+                lookahead_point.x = lookahead.x;
+                lookahead_point.y = lookahead.y;
+                lookahead_point.z = PATH_AND_POINT_DIST_FROM_GROUND;
+                m_lookahead_pub.publish(lookahead_point);
+            }
 
+        }
     }
 
 private:
@@ -27,6 +67,11 @@ private:
     void receive_path(const nav_msgs::Path::ConstPtr& path)
     {
         m_path = to_path(*path);
+        if(!m_path_is_initialized) {
+            ROS_INFO("Got Path!");
+            m_path_is_initialized = true;
+        }
+
     }
 
     Path to_path(const nav_msgs::Path& path)
@@ -67,10 +112,18 @@ private:
 
     ros::NodeHandle n;
     ros::Publisher m_vel_pub;
-    ros::Publisher m_rot_pub;
+    ros::Publisher m_head_to_point_pub;
+    ros::Publisher m_head_error_pub;
+    ros::Publisher m_lookahead_pub;
     ros::Subscriber m_path_sub;
     tf::TransformListener m_tf_listener;
     Path m_path;
+    PurePursuit m_tracker;
+    double m_lookahead_distance;
+    bool m_path_is_initialized;
+    bool m_publish_heading_error;
+    bool m_publish_lookahead_point;
+    bool m_publish_heading_to_point;
 
 };
 
@@ -87,7 +140,9 @@ int main(int argc, char **argv)
     {
         pure_pursuit.process();
 
-        ros::spin();
+        ros::spinOnce();
+
+        loop_rate.sleep();
     }
 
 
