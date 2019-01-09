@@ -3,7 +3,7 @@
     <material name="black">
         <color rgba="0 0 0 1" />
     </material>
-    <link name="chassis">
+    <link name="base_link">
         
         <visual name="visual">
 <origin xyz="0 0 0.395" rpy="0 0 0" />
@@ -55,21 +55,21 @@
     <joint type="fixed" name="left_front_wheel_hinge">
         <origin xyz="0 0 -0.065" rpy="0 0 0" />
         <child link="left_front_wheel"/>
-        <parent link="chassis"/>
+        <parent link="base_link"/>
     </joint>
     <joint type="fixed" name="right_front_wheel_hinge">
         <origin xyz="0 0 -0.065" rpy="0 0 0" />
         <child link="right_front_wheel"/>
-        <parent link="chassis"/>
+        <parent link="base_link"/>
     </joint>
     <joint type="fixed" name="left_back_wheel_hinge">
         <origin xyz="0 0 -0.065" rpy="0 0 0" />
         <child link="left_back_wheel"/>
-        <parent link="chassis"/>
+        <parent link="base_link"/>
     </joint>
     <joint type="fixed" name="right_back_wheel_hinge">
         <origin xyz="0 0 -0.065" rpy="0 0 0" />
         <child link="right_back_wheel"/>
-        <parent link="chassis"/>
+        <parent link="base_link"/>
     </joint>
 </robot>
