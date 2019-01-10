@@ -107,3 +107,4 @@ CATKIN_IGNORE
 
 # Clion files
 cmake-build-debug
+.idea

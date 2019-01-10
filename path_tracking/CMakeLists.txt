@@ -1,17 +1,26 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(path_tracking)
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE DEBUG)
+set(pure_pursuit_DIR ${CMAKE_CURRENT_LIST_DIR}/external/pure_pursuit/cmake/)
 ## Compile as C++11, supported in ROS Kinetic and newer
- add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
+
+add_subdirectory(external/pure_pursuit)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
-  roscpp
-  std_msgs
-  turtlesim
+        geometry_msgs
+        nav_msgs
+        roscpp
+        std_msgs
+        turtlesim
+        tf
+        )
+
+find_package(
+        pure_pursuit REQUIRED
 )
 
 ## System dependencies are found with CMake's conventions
@@ -104,21 +113,21 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES path_tracking
-#  CATKIN_DEPENDS geometry_msgs roscpp std_msgs
-#  DEPENDS system_lib
+        #  INCLUDE_DIRS include
+        #  LIBRARIES path_tracking
+        #  CATKIN_DEPENDS geometry_msgs roscpp std_msgs
+        #  DEPENDS system_lib
 )
 
 ###########
 ## Build ##
 ###########
-
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
-  ${catkin_INCLUDE_DIRS}
+        # include
+        ${catkin_INCLUDE_DIRS}
+        external/pure_pursuit/include
 )
 
 ## Declare a C++ library
@@ -134,8 +143,8 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
- add_executable(${PROJECT_NAME}_node src/path_tracking_node.cpp)
-
+add_executable(waypoint_follower_node src/waypoint_follower_node.cpp)
+add_executable(pure_pursuit_node src/pure_pursuit_node.cpp)
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -147,10 +156,13 @@ include_directories(
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(${PROJECT_NAME}_node
-   ${catkin_LIBRARIES}
- )
-
+target_link_libraries(pure_pursuit_node
+        ${catkin_LIBRARIES}
+        ISC::pure_pursuit
+        )
+target_link_libraries(waypoint_follower_node
+        ${catkin_LIBRARIES}
+        )
 #############
 ## Install ##
 #############
