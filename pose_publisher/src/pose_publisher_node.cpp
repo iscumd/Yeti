@@ -13,7 +13,7 @@ int main(int argc, char** argv){
   while (node.ok()){
     tf::StampedTransform transform;
     try{
-      listener.lookupTransform("/map", "/base_link",  
+      listener.lookupTransform("/map", "/base_link",
                                ros::Time(0), transform);
                                
     }

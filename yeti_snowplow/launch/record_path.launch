@@ -16,19 +16,17 @@
 	</node>
 
 <!-- Static Transforms -->
-	<node pkg="tf" type="static_transform_publisher" name="static_transform_publisher_zed_camera_center" args="0.40 0 0.65 0 0 0 zed_center base_link 10" />
+	<node pkg="tf" type="static_transform_publisher" name="static_transform_publisher_zed_camera_center" args="0.40 0 0.65 0 0 0 base_link camera 10" />
 	<node pkg="tf" type="static_transform_publisher" name="static_transform_publisher_sick_laser_link" args="0.33 0 0.75 0 0 0 base_link sick_laser_link 10" />
 <!-- Localization-->
-	<node pkg="odom_sub" type="odom_sub_node" name="odom_sub_node"/>
 	<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
 		<param name="map_update_interval" value="2.0" />
-		<param name="base_frame" value="base_link" />
 	</node>
-	<node pkg="pose_publisher" name="pose_publisher" type="pose_publisher_node"/>
-	<node pkg="state_publisher" name="state_publisher" type="state_publisher_node"/>
+	<node pkg="pose_publisher" name="pose_publisher" type="pose_publisher_node"></node>
+	<node pkg="state_publisher" name="state_publisher" type="state_publisher_node"></node>
 
 <!-- PID Controller -->
-	<node pkg="control_publisher" name="control_publisher" type="control_publisher_node"/>
+	<node pkg="control_publisher" name="control_publisher" type="control_publisher_node"></node>
 	<node pkg="pid" name="linear_velocity_pid" type="controller">
 		<param name="Kp" value="0.24" />
 		<param name="Ki" value="0.8518" />
@@ -57,17 +55,16 @@
 		<param name="angle_error" value="true"/>
 	</node>
 	<!-- <node pkg="rostopic" type="rostopic" name="pid_enable" args="pub -r 10 /pid_enable std_msgs/Bool '{data: 1}' " output="screen"/> -->
-	<!--<node pkg="rostopic" type="rostopic" name="rotation_setpoint" args="pub -r 10 /rotation_setpoint std_msgs/Float64 '1.57'" output="screen"/>-->
+	<node pkg="rostopic" type="rostopic" name="rotation_setpoint" args="pub -r 10 /rotation_setpoint std_msgs/Float64 '1.57'" output="screen"/>
 
 	<!-- Guidance -->
-    <node pkg="path_tracking" name="pure_pursuit" type="pure_pursuit_node"/>
-    <param name="publish_lookahead" value="true"/>
+    <!--<node pkg="path_recorder" name="path_recorder" type="path_recorder_node" args="~/path`date +%d-%m-%Y_%Ih%Mm%S`.path"/>-->
     <remap from="pure_pursuit/heading_to_point" to="rotation_setpoint"/>
     <node pkg="path_planning" name="path_planning_node" type="path_planning_node" >
 
     </node>
-	<!-- <include file="$(find zed_opencv_ros)/launch/zed_native.launch" />
-	<include file="$(find lvt)/launch/lvt_node.launch" /> -->
+	<include file="$(find zed_opencv_ros)/launch/zed_native.launch" />
+	<include file="$(find lvt)/launch/lvt_node.launch" />
 
 	<!-- Obstacle Detection -->
 	<!-- <node pkg="yeti_snowplow" type="obstacle_detection" name="obstacle_detection" output="screen" /> -->
