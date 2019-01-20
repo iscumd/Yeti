@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
     control_effort.angular.z = 0;
 
     ros::Subscriber linearControlSub = n.subscribe("linear_control_effort", 1, linear_control);
-    ros::Subscriber angularControlSub = n.subscribe("theta_rot_control_effort", 1, angular_control);
+    ros::Subscriber angularControlSub = n.subscribe("angular_velocity_control_effort", 1, angular_control);
 
     ros::Rate rate(10.0);
 

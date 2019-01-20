@@ -18,7 +18,7 @@ void odomCallback(const nav_msgs::Odometry::ConstPtr& msg)
   // ROS_INFO("linear: [%f], angular[%f]", (double)msg->twist.twist.linear.x, (double)msg->twist.twist.angular.z);
   std_msgs::Float64 linear, angular;
 	linear.data = msg->twist.twist.linear.x;
-  angular.data = msg->twist.twist.angular.z;
+  angular.data = -msg->twist.twist.angular.z;
 	linearPub.publish(linear);
   angularPub.publish(angular);
 }
@@ -39,7 +39,7 @@ int main(int argc, char** argv){
   angularPub = n.advertise<std_msgs::Float64>("angular_velocity", 1);
   anglePub = n.advertise<std_msgs::Float64>("theta_rot",1);
 
-  ros::Subscriber odomSub = n.subscribe("/zed/odom", 1, odomCallback);
+  ros::Subscriber odomSub = n.subscribe("/lvt/odometry", 1, odomCallback);
   ros::Subscriber poseSub = n.subscribe("yeti/pose",1,poseCallback);
 
   ros::spin();
