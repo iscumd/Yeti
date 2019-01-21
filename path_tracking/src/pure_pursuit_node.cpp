@@ -8,8 +8,7 @@
 
 #include "pure_pursuit.h"
 
-#define DEFAULT_ANGULAR_TUNE 1
-
+#define DEFAULT_ANGULAR_VEL_TUNE 0.5
 #define DEFAULT_LOOKAHEAD_DISTANCE 1.5
 #define DEFAULT_PUBLISH_HEADING_TO_POINT true
 #define DEFAULT_PUBLISH_HEADING_ERROR true
@@ -54,7 +53,7 @@ public:
             msg.data = lookahead.z;
             m_vel_pub.publish(msg);
 
-            double ang_vel = chop(DEFAULT_ANGULAR_TUNE * -heading_error, -M_PI_4, M_PI_4);
+            double ang_vel = chop(DEFAULT_ANGULAR_VEL_TUNE * heading_error, -M_PI_4, M_PI_4);
             msg.data = ang_vel;
             m_ang_vel_pub.publish(msg);
 
