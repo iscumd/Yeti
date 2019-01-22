@@ -18,7 +18,7 @@ void odomCallback(const nav_msgs::Odometry::ConstPtr& msg)
   // ROS_INFO("linear: [%f], angular[%f]", (double)msg->twist.twist.linear.x, (double)msg->twist.twist.angular.z);
   std_msgs::Float64 linear, angular;
 	linear.data = msg->twist.twist.linear.x;
-  angular.data = -msg->twist.twist.angular.z;
+  angular.data = msg->twist.twist.angular.z;
 	linearPub.publish(linear);
   angularPub.publish(angular);
 }
