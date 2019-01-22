@@ -17,7 +17,9 @@
 
 <!-- Static Transforms -->
 	<!--<node pkg="tf" type="static_transform_publisher" name="static_transform_publisher_zed_camera_center" args="0.40 0 0.65 -1.5707 0 -1.5707 base_link zed_center 10" />-->
+
 	<node pkg="tf" type="static_transform_publisher" name="static_transform_publisher_zed_camera_center" args="0.40 0 0.65 0 0 0 base_link zed_center 10" />
+
 	<node pkg="tf" type="static_transform_publisher" name="static_transform_publisher_sick_laser_link" args="0.33 0 0.75 0 0 0 base_link sick_laser_link 10" />
 <!-- Localization-->
 	<node pkg="odom_sub" type="odom_sub_node" name="odom_sub_node"/>
@@ -83,17 +85,18 @@
     <node pkg="path_planning" name="path_planning_node" type="path_planning_node" />
 
 	<include file="$(find zed_opencv_ros)/launch/zed_native.launch" />
-
+	<!--include file="$(find zed_wrapper)/launch/zed.launch" /-->
 	<!--<node pkg="viso2_ros" type="stereo_odometer" name="stereo_odometer">-->
 		<!--<remap from="stereo" to="/"/>-->
 		<!--<remap from="image" to="image_rect_gray"/>-->
 		<!--<param name="sensor_frame_id" value="zed_center"/>-->
 		<!--<param name="odom_frame_id" value="odom"/>-->
-		<!--<param name="match_radius" value="20"/>-->
 	<!--</node>-->
+
 	<include file="$(find lvt)/launch/lvt_node.launch">
 		<arg name="sensor_frame_id" value="zed_center"/>
 	</include>
+
 
 	<!-- Obstacle Detection -->
 	<!-- <node pkg="yeti_snowplow" type="obstacle_detection" name="obstacle_detection" output="screen" /> -->
