@@ -9,7 +9,7 @@
 #include <iostream>
 #include <vector>
 
-#define SET_SPEED 0.1
+#define SET_SPEED 1
 
 using geometry_msgs::PoseStamped;
 
@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
     // poses.push_back(point(-6.5, 1, 0.0));
 
 /* Path around high bay from computer */
-    poses.push_back(point(0.4, 0, SET_SPEED));
+   /* poses.push_back(point(0.4, 0, SET_SPEED));
     poses.push_back(point(1.9, .1, SET_SPEED));
     poses.push_back(point(3, 0.7, SET_SPEED));
     poses.push_back(point(4.1, 1.6, SET_SPEED));
@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
     poses.push_back(point(11.3, 19.7, SET_SPEED));
     poses.push_back(point(9.7, 19.6, SET_SPEED));
     poses.push_back(point(7.6, 17.3, 0));
-
+*/
 
     /*
     poses.push_back(point(2.485,-.727 ,0.3));
@@ -87,6 +87,28 @@ int main(int argc, char **argv) {
     poses.push_back(point(12.29,1.180,0.3));
      */
 
+    /*poses.push_back(point(2,-0.1,0.3));
+        poses.push_back(point(8,-0.5,0.3));
+            poses.push_back(point(8.5,-1,0.3));
+                poses.push_back(point(8.5,-2,0.3));
+                    poses.push_back(point(7.5,-3,0.3));
+                        poses.push_back(point(2,-3,0.3));*/
+    poses.push_back(point(0,0,SET_SPEED));
+    poses.push_back(point(3.0,0.62,SET_SPEED));
+    poses.push_back(point(5.3,2.1,SET_SPEED));
+    poses.push_back(point(7.0,4.6,SET_SPEED));
+    poses.push_back(point(7.6,7.1,SET_SPEED));
+    poses.push_back(point(7.1,10.1,SET_SPEED));
+    poses.push_back(point(5.3,12.7,SET_SPEED));
+    poses.push_back(point(3.0,13.6,SET_SPEED));
+    poses.push_back(point(-2.3,14.1,SET_SPEED));
+    poses.push_back(point(-5.1,12.6,SET_SPEED));
+poses.push_back(point(-6.6,10.4,SET_SPEED));
+poses.push_back(point(-7.4,7.7,SET_SPEED));
+poses.push_back(point(-6.8,3.9,SET_SPEED));
+poses.push_back(point(-6.3,3.9,SET_SPEED));
+poses.push_back(point(-3.14,1,SET_SPEED));
+poses.push_back(point(0,0,SET_SPEED));
     path.poses.resize(poses.size());
     for (int i = 0; i < poses.size(); ++i) {
         PoseStamped p = poses.at(i);

@@ -9,7 +9,7 @@
 #include "pure_pursuit.h"
 
 #define DEFAULT_ANGULAR_VEL_TUNE 0.5
-#define DEFAULT_LOOKAHEAD_DISTANCE 1.5
+#define DEFAULT_LOOKAHEAD_DISTANCE 2
 #define DEFAULT_PUBLISH_HEADING_TO_POINT true
 #define DEFAULT_PUBLISH_HEADING_ERROR true
 #define DEFAULT_PUBLISH_LOOKAHEAD_POINT false
@@ -29,8 +29,8 @@ public:
         m_ang_vel_pub = n.advertise<std_msgs::Float64>("angular_velocity_setpoint", 1);
         m_path_sub = n.subscribe("path", 1, &PurePursuitRos::receive_path, this);
         if(m_publish_heading_to_point) {
-            m_head_to_point_pub = n.advertise<std_msgs::Float64>("pure_pursuit/heading_to_point", 1);
-//            m_head_to_point_pub = n.advertise<std_msgs::Float64>("/rotation_setpoint", 1);
+            //m_head_to_point_pub = n.advertise<std_msgs::Float64>("pure_pursuit/heading_to_point", 1);
+            m_head_to_point_pub = n.advertise<std_msgs::Float64>("/rotation_setpoint", 1);
         }
         if(m_publish_heading_error){
             m_head_error_pub = n.advertise<std_msgs::Float64>("pure_pursuit/heading_error", 1);
@@ -55,7 +55,7 @@ public:
 
             double ang_vel = chop(DEFAULT_ANGULAR_VEL_TUNE * heading_error, -M_PI_4, M_PI_4);
             msg.data = ang_vel;
-            m_ang_vel_pub.publish(msg);
+            //m_ang_vel_pub.publish(msg);
 
             if(m_publish_heading_to_point) {
                 msg.data = heading_to_point;
