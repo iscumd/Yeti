@@ -9,7 +9,7 @@
 #include <iostream>
 #include <vector>
 
-#define SET_SPEED 1
+#define SET_SPEED 0.5
 
 using geometry_msgs::PoseStamped;
 
@@ -93,6 +93,8 @@ int main(int argc, char **argv) {
                 poses.push_back(point(8.5,-2,0.3));
                     poses.push_back(point(7.5,-3,0.3));
                         poses.push_back(point(2,-3,0.3));*/
+//around highbay
+/*
     poses.push_back(point(0,0,SET_SPEED));
     poses.push_back(point(3.0,0.62,SET_SPEED));
     poses.push_back(point(5.3,2.1,SET_SPEED));
@@ -109,7 +111,24 @@ poses.push_back(point(-6.8,3.9,SET_SPEED));
 poses.push_back(point(-6.3,3.9,SET_SPEED));
 poses.push_back(point(-3.14,1,SET_SPEED));
 poses.push_back(point(0,0,SET_SPEED));
-    path.poses.resize(poses.size());
+*/  
+//test moving around obstacles
+poses.push_back(point(0,0,SET_SPEED));
+poses.push_back(point(1.0,0,SET_SPEED));
+poses.push_back(point(1.6,-0.05,SET_SPEED));
+poses.push_back(point(2.11,-0.05,SET_SPEED));
+poses.push_back(point(2.65, -0.48,SET_SPEED));
+poses.push_back(point(3.65, -0.89,SET_SPEED));
+poses.push_back(point(4.35,-0.92,SET_SPEED));
+poses.push_back(point(5.275,-0.36,SET_SPEED));
+poses.push_back(point(6.6,-0.414,SET_SPEED));
+poses.push_back(point(6.75,0.2,SET_SPEED));
+poses.push_back(point(5.67,0.404,SET_SPEED));
+poses.push_back(point(4.72,0.84,SET_SPEED));
+poses.push_back(point(3.15,0.219,SET_SPEED));
+poses.push_back(point(0.5,0.3,SET_SPEED));
+
+  path.poses.resize(poses.size());
     for (int i = 0; i < poses.size(); ++i) {
         PoseStamped p = poses.at(i);
         path.poses.at(i) = p;
