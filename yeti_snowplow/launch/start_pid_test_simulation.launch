@@ -92,13 +92,3 @@
     <node type="rviz" name="rviz" pkg="rviz" args="-d $(find yeti_snowplow)/launch/sim.rviz"/>
 
 </launch>
-
-
-
-
-
-
-
-
-
-
