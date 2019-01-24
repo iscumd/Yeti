@@ -34,11 +34,15 @@
     <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
         <param name="map_update_interval" value="2.0"/>
     </node>
-    <node pkg="pose_publisher" name="pose_publisher" type="pose_publisher_node"></node>
-    <node pkg="state_publisher" name="state_publisher" type="state_publisher_node"></node>
+    <node pkg="pose_publisher" name="pose_publisher" type="pose_publisher_node"/>
+    <node pkg="state_publisher" name="state_publisher" type="state_publisher_node"/>
+
+    <!-- Obstacle Detection -->
+    <node pkg="obstacle_detection" name="obstacle_detection" type="obstacle_detection_node"/>
+
 
     <!-- PID Controller -->
-    <node pkg="control_publisher" name="control_publisher" type="control_publisher_node"></node>
+    <node pkg="control_publisher" name="control_publisher" type="control_publisher_node"/>
     <node pkg="pid" name="linear_velocity_pid" type="controller">
         <param name="Kp" value="0.2"/>
         <param name="Ki" value="3.43"/>

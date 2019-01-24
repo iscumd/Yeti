@@ -39,21 +39,21 @@ int main(int argc, char **argv) {
     path.header.frame_id = "map";
     path.header.stamp = ros::Time::now();
 
-    // poses.push_back(point(-7.5, 0, 0.3));
-    // poses.push_back(point(-6.5, 0, 0.3));
-    // poses.push_back(point(-2.5,-1,0.3));
-    // poses.push_back(point(0, -1, 0.3));
-    // poses.push_back(point(1, -1, 0.3));
-    // poses.push_back(point(2, -1, 0.3));
-    // poses.push_back(point(4, -1, 0.3));
-    // poses.push_back(point(5.5, -1, 0.3));
-    // poses.push_back(point(5.5, 1, 0.3));
-    // poses.push_back(point(5, 1, 0.3));
-    // poses.push_back(point(4, 1, 0.3));
-    // poses.push_back(point(1, 1, 0.3));
-    // poses.push_back(point(0.5, 1, 0.3));
-    // poses.push_back(point(-6.2, 1, 0.3));
-    // poses.push_back(point(-6.5, 1, 0.0));
+    /* poses.push_back(point(-7.5, 0, 0.3));
+     poses.push_back(point(-6.5, 0, 0.3));
+     poses.push_back(point(-2.5,-1,0.3));
+     poses.push_back(point(0, -1, 0.3));
+     poses.push_back(point(1, -1, 0.3));
+     poses.push_back(point(2, -1, 0.3));
+     poses.push_back(point(4, -1, 0.3));
+     poses.push_back(point(5.5, -1, 0.3));
+     poses.push_back(point(5.5, 1, 0.3));
+     poses.push_back(point(5, 1, 0.3));
+     poses.push_back(point(4, 1, 0.3));
+     poses.push_back(point(1, 1, 0.3));
+     poses.push_back(point(0.5, 1, 0.3));
+     poses.push_back(point(-6.2, 1, 0.3));
+     poses.push_back(point(-6.5, 1, 0.0));*/
 
 /* Path around high bay from computer */
    /* poses.push_back(point(0.4, 0, SET_SPEED));
@@ -93,6 +93,7 @@ int main(int argc, char **argv) {
                 poses.push_back(point(8.5,-2,0.3));
                     poses.push_back(point(7.5,-3,0.3));
                         poses.push_back(point(2,-3,0.3));*/
+
 //around highbay
 /*
     poses.push_back(point(0,0,SET_SPEED));
