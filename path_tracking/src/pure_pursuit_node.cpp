@@ -8,9 +8,10 @@
 
 #include "pure_pursuit.h"
 
-#define DEFAULT_LOOKAHEAD_DISTANCE 1.5
+#define DEFAULT_ANGULAR_VEL_TUNE 0.5
+#define DEFAULT_LOOKAHEAD_DISTANCE 2
 #define DEFAULT_PUBLISH_HEADING_TO_POINT true
-#define DEFAULT_PUBLISH_HEADING_ERROR false
+#define DEFAULT_PUBLISH_HEADING_ERROR true
 #define DEFAULT_PUBLISH_LOOKAHEAD_POINT false
 
 #define PATH_AND_POINT_DIST_FROM_GROUND 0.3
@@ -25,9 +26,10 @@ public:
         n.param<bool>("publish_lookahead", m_publish_lookahead_point, DEFAULT_PUBLISH_LOOKAHEAD_POINT);
         m_tracker.reset_lookahead_distance(m_lookahead_distance);
         m_vel_pub = n.advertise<std_msgs::Float64>("linear_velocity_setpoint", 1);
+        m_ang_vel_pub = n.advertise<std_msgs::Float64>("angular_velocity_setpoint", 1);
         m_path_sub = n.subscribe("path", 1, &PurePursuitRos::receive_path, this);
         if(m_publish_heading_to_point) {
-//            m_head_to_point_pub = n.advertise<std_msgs::Float64>("pure_pursuit/heading_to_point", 1);
+            //m_head_to_point_pub = n.advertise<std_msgs::Float64>("pure_pursuit/heading_to_point", 1);
             m_head_to_point_pub = n.advertise<std_msgs::Float64>("/rotation_setpoint", 1);
         }
         if(m_publish_heading_error){
@@ -39,6 +41,8 @@ public:
 
     }
 
+
+
     void process()
     {
         if(m_path_is_initialized) {
@@ -48,6 +52,11 @@ public:
             std::tie (lookahead, heading_to_point, heading_error) = m_tracker.get_target_state(get_pose());
             msg.data = lookahead.z;
             m_vel_pub.publish(msg);
+
+            double ang_vel = chop(DEFAULT_ANGULAR_VEL_TUNE * heading_error, -M_PI_4, M_PI_4);
+            msg.data = ang_vel;
+            //m_ang_vel_pub.publish(msg);
+
             if(m_publish_heading_to_point) {
                 msg.data = heading_to_point;
                 m_head_to_point_pub.publish(msg);
@@ -71,6 +80,20 @@ public:
 
 private:
 
+    double chop(double x, double x_min, double x_max){
+        if(x < x_min)
+        {
+            return x_min;
+        }
+        else if(x > x_max)
+        {
+            return x_max;
+        }
+        else{
+            return x;
+        }
+    }
+
     void receive_path(const nav_msgs::Path::ConstPtr& path)
     {
         m_path = to_path(*path);
@@ -79,8 +102,6 @@ private:
             ROS_INFO("Got Path!");
             m_path_is_initialized = true;
         }
-
-
     }
 
     Path to_path(const nav_msgs::Path& path)
@@ -121,6 +142,7 @@ private:
 
     ros::NodeHandle n;
     ros::Publisher m_vel_pub;
+    ros::Publisher m_ang_vel_pub;
     ros::Publisher m_head_to_point_pub;
     ros::Publisher m_head_error_pub;
     ros::Publisher m_lookahead_pub;

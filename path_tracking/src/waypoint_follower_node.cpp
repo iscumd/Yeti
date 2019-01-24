@@ -52,7 +52,7 @@ void PoseTrackerCallback(const geometry_msgs::Pose2D::ConstPtr &msg)
     float ang_err = ang_diff(heading_th, msg->theta);
     std::cout << ang_err << std::endl;
     float w = chop(angular_tune * ang_err, -5, 5);
-    float v = chop(1.0 / (linear_tune * abs(ang_err) + .000000001), 0.0, 2);
+    float v = chop(1.0 / (linear_tune * abs(ang_err) + .000000001), 0.0, 0.5);
     // w = 10;
     // float v = chop(0.1 + distance(waypoints[curr_waypoint].x, waypoints[curr_waypoint].y, msg->x,msg->y), 0.0, 10);
     // geometry_msgs::Twist vel;
@@ -62,7 +62,7 @@ void PoseTrackerCallback(const geometry_msgs::Pose2D::ConstPtr &msg)
     zero.data = 0;
     // vel.linear.x = v;
     // vel.angular.z = w;
-    if (distance(waypoints[curr_waypoint].x,  waypoints[curr_waypoint].y, msg->x, msg->y) > .8)
+    if (distance(waypoints[curr_waypoint].x,  waypoints[curr_waypoint].y, msg->x, msg->y) > .5)
     {
         vel_pub.publish(vel);
         rot_pub.publish(rot);
@@ -81,10 +81,10 @@ void PoseTrackerCallback(const geometry_msgs::Pose2D::ConstPtr &msg)
 
 int main(int argc, char **argv)
 {
-    waypoints.push_back({0, 0}); //waypoints for turtlesim
-
-    waypoints.push_back({5.5, 0});
-    waypoints.push_back({-6.5, 0});
+    waypoints.push_back({6, -0.5});
+    waypoints.push_back({6, 0.5});
+    // waypoints.push_back({-2, 0});
+    waypoints.push_back({0, 0});
     ros::init(argc, argv, "listener");
     ros::NodeHandle n;
     vel_pub = n.advertise<std_msgs::Float64>("linear_velocity_setpoint", 1);
