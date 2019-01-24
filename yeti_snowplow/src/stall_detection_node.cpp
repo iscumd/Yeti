@@ -1,248 +1,103 @@
 #include <ros/ros.h>
-//#include <chrono>
-#include <boost/chrono.hpp>
-#include <iostream>
-#include <deque>
-#include <queue>
-#include <math.h>
+#include <std_msgs/Float64.h>
+#include "isc_shared_msgs/drive_mode.h"
 #include <geometry_msgs/Twist.h>
-#include <std_msgs/Bool.h>
-#include <geometry_msgs/Pose2D.h>
-#include <sensor_msgs/PointCloud.h>
-#include "boost/date_time/posix_time/posix_time.hpp"
-using namespace boost::posix_time;
-using namespace std;
-//https://stackoverflow.com/a/4974588 but use boost
 
-typedef boost::chrono::high_resolution_clock Clock;
-typedef boost::chrono::milliseconds Milliseconds;
+//from params
+float REVERSE_SPEED;
+float ANGULAR_TOLERANCE;
+float SPEED_TOLERANCE;
+int STALL_TIMER;
 
-class StallDetection
-{
-    private:
-    ros::NodeHandle n;
-	ros::Publisher stallVelocityPub;
-    ros::Publisher navigationPIDStatusPub;
-	ros::Subscriber robotCurrentVelocitySub;
-    ros::Subscriber expectedVelocitySub;
-    ros::Subscriber actualVelocitySub;
-    ros::Subscriber eStopStatusSub;
-    int queueSize;
-    deque<geometry_msgs::Pose2D> robotVelocityHistory;
-    bool disableNavigationPID;
-    bool eStopStatus;
-    geometry_msgs::Twist actualVelocity;
-    geometry_msgs::Twist expectedVelocity;
-    ptime stuckTime;
-    double maxSpeed;
-    bool stallDetected;
-    double overrideSpeed;
-    double reverseDurationInMilli;
-    //Initialize tolerance thresholds and time saving for Slip detection
-    double noMovementTolerance;// 10 cm
-    double noRotationTolerance; //5 degrees 
-    //DateTime lastStuckTime; //save last stuck time
-    //TimeSpan reverseDuration = new TimeSpan(0, 0, 0, 0, 800); // 0.5 Seconds
-    double reverseSpeed;
-    //Private Functions
-    double findMinElement(string returnType)
-    {
-        if(returnType == "x")
-        {
-            std::deque<geometry_msgs::Pose2D>::iterator it = std::min_element(robotVelocityHistory.begin(), robotVelocityHistory.end(),
-                             []( geometry_msgs::Pose2D &a, geometry_msgs::Pose2D &b)
-                             {
-                                 return a.x < b.x;
-                             } ); 
-                return (*it).x;
-        }
-        else if (returnType == "y")
-        {
-            std::deque<geometry_msgs::Pose2D>::iterator it = std::min_element( robotVelocityHistory.begin(), robotVelocityHistory.end(),
-                             []( geometry_msgs::Pose2D &a, geometry_msgs::Pose2D &b)
-                             {
-                                 return a.y < b.y;
-                             } );
-                return (*it).y;
-        }
-        else if(returnType == "theta")
-        {
-            std::deque<geometry_msgs::Pose2D>::iterator it = std::max_element( robotVelocityHistory.begin(), robotVelocityHistory.end(),
-                             [](geometry_msgs::Pose2D &a, geometry_msgs::Pose2D &b )
-                             {
-                                 return a.theta < b.theta;
-                             } );
-                return (*it).theta;
-        }
-        else
-            return 0.0;
+ros::Subscriber vel_setpoint_sub;
+ros::Subscriber angular_setpoint_sub;
+float vel_setpoint;
+float angular_setpoint;
+ros::Subscriber vel_actual_sub;
+ros::Subscriber angular_actual_sub;
+float vel_actual;
+float angular_actual;
+ros::Subscriber drive_mode_sub;
+std::string drive_mode;
 
-    }
-    double findMaxElement(string returnType)
-    {
-        if(returnType == "x")
-        {
-            std::deque<geometry_msgs::Pose2D>::iterator it = std::max_element( robotVelocityHistory.begin(), robotVelocityHistory.end(),
-                             [](geometry_msgs::Pose2D &a, geometry_msgs::Pose2D &b )
-                             {
-                                 return a.x < b.x;
-                             } ); 
-                return (*it).x;
-        }
-        else if (returnType == "y")
-        {
-            std::deque<geometry_msgs::Pose2D>::iterator it = std::max_element( robotVelocityHistory.begin(), robotVelocityHistory.end(),
-                             [](geometry_msgs::Pose2D &a, geometry_msgs::Pose2D &b )
-                             {
-                                 return a.y < b.y;
-                             } );
-                return (*it).y;
-        }
-        else if(returnType == "theta")
-        {
-            std::deque<geometry_msgs::Pose2D>::iterator it = std::max_element( robotVelocityHistory.begin(), robotVelocityHistory.end(),
-                             [](geometry_msgs::Pose2D &a, geometry_msgs::Pose2D &b )
-                             {
-                                 return a.theta < b.theta;
-                             } );
-                return (*it).theta;
-        }
-        else
-            return 0.0;
-    }
+bool is_stalled;
+geometry_msgs::Twist stall_vel;
+ros::Publisher stall_vel_pub;
+ros::Publisher nav_status_pub;
 
-    void robotPositionCallback(const geometry_msgs::Pose2D::ConstPtr& robotLocation)
-    {
-        addVelocityToHistory(*robotLocation);
-    }
-    void eStopStatusCallback(const std_msgs::Bool::ConstPtr& gpio)
-    {
-        //eStopStatusCallback = gpio->eStop;
-    }
-    void expectedRobotVelocityCallback(const geometry_msgs::Twist::ConstPtr& velocity)
-    {
-        expectedVelocity = *velocity;
-    }
-    void actualRobotVelocityCallback(const geometry_msgs::Twist::ConstPtr& velocity)
-    {
-        actualVelocity = *velocity;
-    }
-    public:
-    StallDetection()
-    {
-        robotCurrentVelocitySub = n.subscribe("/localization/robot_location", 100, &StallDetection::robotPositionCallback, this);
-        actualVelocitySub = n.subscribe("/localization/velocity", 100, &StallDetection::expectedRobotVelocityCallback, this);
-        expectedVelocitySub = n.subscribe("/obstacle_reaction/velocity", 100, &StallDetection::expectedRobotVelocityCallback, this);
-        eStopStatusSub = n.subscribe("gpio/inputs", 1, &StallDetection::eStopStatusCallback, this);
-        n.param("robot_velocity_queue_size", queueSize, 100);
-        n.param("slip_detection_noMovementTolerance",noMovementTolerance, 0.1);// 10 cm
-        n.param("slip_detection_noRotationTolerance" ,noRotationTolerance, 5.0); //5 degrees
-        n.param("slip_detection_reverseSpeed", reverseSpeed, -0.5);
-        n.param("stall_detection_maxSpeed", maxSpeed, 0.7);
-        n.param("stall_detection_reverse_duration", reverseDurationInMilli, 0.7);
+void velocitySetpointCallback(const std_msgs::Float64::ConstPtr& msg) {
+	vel_setpoint = msg->data;
+}
 
-        stallDetected = false;
-        robotVelocityHistory.resize(queueSize);
-    } 
-    bool getStallStatus()
-    {
-        return stallDetected;
-    }
-    double getReverseDurationInMilli()
-    {
-        return reverseDurationInMilli;
-    }
-    double getExpectedVelocity()
-    {
-        return expectedVelocity.linear.x;
-    }
-    double getMaxSpeed()
-    {
-        return maxSpeed;
-    }
-    double getReverseSpeed()
-    {
-        return reverseSpeed;
-    }
-    ptime getLastStuckTime()
-    {
-        return stuckTime;
-    }
-    void addVelocityToHistory(geometry_msgs::Pose2D robotCurrentVelocity)
-    {
-        if(robotVelocityHistory.size() > queueSize)
-        {
-            robotVelocityHistory.pop_front();
-        }
-        robotVelocityHistory.push_back(robotCurrentVelocity);
+void angularSetpointCallback(const std_msgs::Float64::ConstPtr& msg) {
+	angular_setpoint = msg->data;
+}
 
-        if(robotVelocityHistory.size() >= queueSize)
-        {
-            activateStallDetection();
-        }
+void velocityActualCallback(const std_msgs::Float64::ConstPtr& msg) {
+	vel_actual = msg->data;
+}
 
-    }
-    void activateStallDetection()
-    {
-        double minX = findMinElement("x");
-        double maxX = findMaxElement("x");
-        double minY = findMinElement("y");
-        double maxY = findMaxElement("y");
-        double minHeading = findMinElement("theta");
-        double maxHeading = findMaxElement("theta");
+void angularActualCallback(const std_msgs::Float64::ConstPtr& msg) {
+	angular_actual = msg->data;
+}
 
-        if ((pow(maxX - minX, 2) + pow(maxY - minY, 2) < noMovementTolerance) 
-            && maxHeading - minHeading < noRotationTolerance && eStopStatus && 
-            (expectedVelocity.linear.x != actualVelocity.linear.x) || (expectedVelocity.angular.z != actualVelocity.angular.z))
-                {
-                    stallDetected = true;
-                    ptime t(second_clock::local_time());//save the time which slipping was detected 
-                    stuckTime = t;
-                    robotVelocityHistory.clear();// clear the QUeue so that stall detection cannot occur again until the queue is full
-                }
-        else
-            stallDetected = false;
-    }
+void driveModeCallback(const isc_shared_msgs::drive_mode::ConstPtr& msg) {
+	drive_mode = msg->mode;
+}
 
-};
+void detectStall(const ros::TimerEvent& event) {
+	if (drive_mode != "auto") {
+		is_stalled = false;
+		return;
+	}
+	if (angular_actual < angular_setpoint * ANGULAR_TOLERANCE) {
+		if (vel_actual < vel_setpoint * SPEED_TOLERANCE) {
+			is_stalled = true;
+		}
+	}
+}
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
 	ros::init(argc, argv, "stall_detection");
     ros::NodeHandle n;
-    StallDetection stallDetection;
-    double reverseDurationInMilli = stallDetection.getReverseDurationInMilli();
-    time_duration td = milliseconds(reverseDurationInMilli);
-    ros::Publisher stallVelocityPub = n.advertise<geometry_msgs::Twist>("/stall/velocity", 1000);
-    ros::Publisher navigationPIDStatusPub = n.advertise<std_msgs::Bool>("/navigation/disable", 1000); 
-	geometry_msgs::Twist stallVelocity;
-    std_msgs::Bool navigationOff;
-    navigationOff.data = stallDetection.getStallStatus();
-	while(ros::ok())
-	{
+
+	stall_vel.linear.x = REVERSE_SPEED;
+	stall_vel.angular.z = 0.0;
+	is_stalled = false;
+
+	ros::Timer stall_timer = n.createTimer(ros::Duration(STALL_TIMER), detectStall);
+
+	vel_setpoint_sub = n.subscribe("linear_velocity_setpoint", 1, velocitySetpointCallback);
+	angular_setpoint_sub = n.subscribe("angular_velocity_setpoint", 1, angularSetpointCallback);
+	vel_actual_sub = n.subscribe("linear_velocity", 1, velocityActualCallback);
+	angular_actual_sub = n.subscribe("angular_velocity", 1, angularActualCallback);
+	drive_mode_sub = n.subscribe("yeti/drive_mode", 1, driveModeCallback);
+
+    stall_vel_pub = n.advertise<geometry_msgs::Twist>("/stall/velocity", 1000);
+    //nav_status_pub = n.advertise<std_msgs::Bool>("/navigation/disable", 1000);
+
+	/*
+		REVERSE_SPEED		Speed yeti reverses at when a stall is detected
+
+		ANGULAR_TOLERANCE	Percentage of angular speed which determines the
+							acceptable range to activate stall detection
+								(actual speed) < tolerance% * (setpoint speed)
+
+		ANGULAR_TOLERANCE	Percentage of linear speed which determines the
+							acceptable range to activate stall detection
+								(actual speed) < tolerance% * (setpoint speed)
+
+		STALL_TIMER			How often in seconds to check for a stall event
+	*/
+	n.param("stall_detection_reverse_speed", REVERSE_SPEED, -0.5f);
+	n.param("stall_detection_angular_tolerance", ANGULAR_TOLERANCE, 0.01f);
+	n.param("stall_detection_speed_tolerance", SPEED_TOLERANCE, 0.01f);
+	n.param("stall_detection_stall_timer", STALL_TIMER, 1);
+
+	while(ros::ok()) {
 		ros::spinOnce();
-        ptime lastStuckTime (stallDetection.getLastStuckTime() + td);
-        ptime now (second_clock::local_time());
-        if(stallDetection.getStallStatus())
-            if(lastStuckTime > now)
-            {
-                //Send Reverse Speed
-                double reverseSpeed = stallDetection.getMaxSpeed() * stallDetection.getReverseSpeed();
-                stallVelocity.linear.x = reverseSpeed;
-                stallVelocity.angular.z = 0.0;
-                stallVelocityPub.publish(stallVelocity);
-            }
-            // else
-            // {
-            //     //Send Normal Speed
-            //     double normalSpeed = stallDetection.getExpectedVelocity();
-            //     stallVelocity.linear.x = normalSpeed;
-            //     stallVelocity.angular.z = 0.0;
-            //     stallVelocityPub.publish(stallVelocity);
-            // }
-            navigationPIDStatusPub.publish(navigationOff);
-        }
-	
-	
+		if(is_stalled)
+        	stall_vel_pub.publish(stall_vel);
+	}
 	return 0;
 }
