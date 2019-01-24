@@ -70,7 +70,7 @@
           output="screen"/>
 
     <!-- Guidance -->
-    <!--<node pkg="path_tracking" name="pure_pursuit" type="pure_pursuit_node"/>-->
+    <node pkg="path_tracking" name="pure_pursuit" type="pure_pursuit_node"/>
     <param name="publish_lookahead" value="true"/>
     <remap from="pure_pursuit/heading_to_point" to="rotation_setpoint"/>
     <node pkg="path_planning" name="path_planning_node" type="path_planning_node" >
