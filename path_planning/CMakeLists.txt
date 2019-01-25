@@ -2,19 +2,21 @@ cmake_minimum_required(VERSION 2.8.3)
 project(path_planning)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
- add_compile_options(-std=c++11)
-
+add_compile_options(-std=c++11)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
-  nav_msgs
-  roscpp
-  rospy
-  std_msgs
-  visualization_msgs
-)
+        geometry_msgs
+        nav_msgs
+        roscpp
+        rospy
+        std_msgs
+        visualization_msgs
+        )
+
+find_package(Eigen3 REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -106,10 +108,10 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES path_planning
-#  CATKIN_DEPENDS geometry_msgs nav_msgs roscpp rospy std_msgs visualization_msgs
-#  DEPENDS system_lib
+        #  INCLUDE_DIRS include
+        #  LIBRARIES path_planning
+        #  CATKIN_DEPENDS geometry_msgs nav_msgs roscpp rospy std_msgs visualization_msgs
+        #  DEPENDS system_lib
 )
 
 ###########
@@ -119,8 +121,9 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
-  ${catkin_INCLUDE_DIRS}
+        # include
+        ${catkin_INCLUDE_DIRS}
+        ${EIGEN3_INCLUDE_DIR}
 )
 
 ## Declare a C++ library
@@ -136,7 +139,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
- add_executable(${PROJECT_NAME}_node src/path_planning_node.cpp)
+add_executable(${PROJECT_NAME}_node src/path_planning_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -149,9 +152,9 @@ include_directories(
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(${PROJECT_NAME}_node
-   ${catkin_LIBRARIES}
- )
+target_link_libraries(${PROJECT_NAME}_node
+        ${catkin_LIBRARIES}
+        )
 
 #############
 ## Install ##

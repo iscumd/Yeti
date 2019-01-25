@@ -4,145 +4,287 @@
 
 #include "ros/ros.h"
 #include "nav_msgs/Path.h"
-#include "geometry_msgs/Pose2D.h"
+#include "geometry_msgs/Pose.h"
 #include "geometry_msgs/PoseStamped.h"
 #include <iostream>
 #include <vector>
+#include <geometry_msgs/Pose2D.h>
+#include "Eigen/Core"
+#include "Eigen/Geometry"
+#include "Eigen/src/Geometry/ParametrizedLine.h"
+#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 
 #define SET_SPEED 0.5
+#define OBSTACLE_BUFFER 1.2
+#define SAMPLE_STEP_SIZE 0.1
+#define GOAL_DISTANCE_ACCEPTENCE 0.8
+
+#define LEFT 1
+#define RIGHT 0
 
 using geometry_msgs::PoseStamped;
 
-PoseStamped point(double x, double y, double speed) {
+struct Point2D
+{
+    double x;
+    double y;
+    Point2D(){}
+    Point2D(double x, double y)
+    {
+        this->x = x;
+        this->y = y;
+    }
+};
+
+PoseStamped point(Point2D p, double speed) {
     PoseStamped p1;
     p1.header.stamp = ros::Time::now();
     p1.header.frame_id = "map";
-    p1.pose.position.x = x;
-    p1.pose.position.y = y;
+    p1.pose.position.x = p.x;
+    p1.pose.position.y = p.y;
     p1.pose.position.z = speed;
     return p1;
 }
+
+typedef std::pair<Point2D, Point2D> Segment2D;
+
+std::pair<Point2D, double> project_to_line_segment( Point2D p, Segment2D seg )
+{
+    /* This implementation is a slightly modified version of the function from :
+     * http://forums.codeguru.com/showthread.php?194400-Distance-between-point-and-line-segment
+     */
+    double cx            = p.x;
+    double cy            = p.y;
+    double ax            = seg.first.x;
+    double ay            = seg.first.y;
+    double bx            = seg.second.x;
+    double by            = seg.second.y;
+    double r_numerator   = ( cx - ax ) * ( bx - ax ) + ( cy - ay ) * ( by - ay );
+    double r_denomenator = ( bx - ax ) * ( bx - ax ) + ( by - ay ) * ( by - ay );
+    double r             = r_numerator / r_denomenator;
+
+    double px = ax + r * ( bx - ax );
+    double py = ay + r * ( by - ay );
+
+    double s = ( ( ay - cy ) * ( bx - ax ) - ( ax - cx ) * ( by - ay ) ) / r_denomenator;
+
+    double distanceLine    = fabs( s ) * sqrt( r_denomenator );
+    double distanceSegment = -1;
+    //
+    // (xx,yy) is the point on the lineSegment closest to (cx,cy)
+    //
+    double xx = px;
+    double yy = py;
+
+    if ( ( r >= 0 ) && ( r <= 1 ) )
+    {
+        distanceSegment = distanceLine;
+    }
+    else
+    {
+
+        double dist1 = ( cx - ax ) * ( cx - ax ) + ( cy - ay ) * ( cy - ay );
+        double dist2 = ( cx - bx ) * ( cx - bx ) + ( cy - by ) * ( cy - by );
+        if ( dist1 < dist2 )
+        {
+            xx              = ax;
+            yy              = ay;
+            distanceSegment = sqrt( dist1 );
+        }
+        else
+        {
+            xx              = bx;
+            yy              = by;
+            distanceSegment = sqrt( dist2 );
+        }
+    }
+
+    return std::make_pair( Point2D( xx, yy ), distanceSegment );
+}
+
+double
+distance( const Point2D& point1,
+          const Point2D& point2 )
+{
+    return std::sqrt( std::pow( ( point2.x - point1.x ), 2 )
+                      + std::pow( ( point2.y - point1.y ), 2 ) );
+}
+
+double
+distance( const geometry_msgs::Pose2D& point1,
+          const Point2D& point2 )
+{
+    return std::sqrt( std::pow( ( point2.x - point1.x ), 2 )
+                      + std::pow( ( point2.y - point1.y ), 2 ) );
+}
+
+class PathPlanner{
+public:
+    PathPlanner(Point2D starting_position, std::vector<Point2D> igoals): pose_initialized(false), curr_goal(0), goals(igoals), direction_preference(std::make_pair<int,int>(RIGHT,LEFT))
+    {
+        path_pub = n.advertise<nav_msgs::Path>("path", 100);
+        pose_sub = n.subscribe("/yeti/pose",1, &PathPlanner::receive_pose, this);
+        obstacle_sub = n.subscribe("obstacle_detection/obstacles",1,&PathPlanner::receive_obstacles, this);
+    }
+
+    nav_msgs::Path get_path(const geometry_msgs::Pose2D& state, const Point2D& goal_point, std::vector<Point2D> obstacles)
+    {
+        //sample straight line from state to goal
+        //if sample point is within obstacle buffer
+            //move point left or right (orthogonol to path until outside of buffer
+                //left or right based on distance from other obstacles or course boundaries
+        //if state is at goal point
+            //increment goal point
+        Point2D sample_point(state.x,state.y);
+        nav_msgs::Path path;
+        Eigen::Vector2d state_vec( state.x, state.y );
+        Eigen::Vector2d goal_vec( goal_point.x, goal_point.y);
+
+        Eigen::ParametrizedLine<double, 2> line = line.Through( state_vec, goal_vec);
+        double curr_dist = 0;
+        while(distance(sample_point, goal_point) > GOAL_DISTANCE_ACCEPTENCE)
+        {
+            auto p = line.pointAt(curr_dist);
+            sample_point.x = p.data()[0];
+            sample_point.y = p.data()[1];
+            for(ulong i = 0; i < detected_obstacles.size(); ++i){
+                if(distance(sample_point, detected_obstacles.at(i)) < OBSTACLE_BUFFER)
+                {
+                    bool left = false, right = false;
+                    double dist_left, dist_right;
+                    dist_left = project_to_line_segment(detected_obstacles.at(i),std::make_pair<Point2D,Point2D>(Point2D(-3,2), Point2D(12,2))).second;
+                    dist_right = project_to_line_segment(detected_obstacles.at(i),std::make_pair<Point2D,Point2D>(Point2D(-3,-2), Point2D(12,-2))).second;
+                    if(dist_left > OBSTACLE_BUFFER && dist_right > OBSTACLE_BUFFER)
+                    {
+                        auto left_proj = project_to_line_segment(Point2D(state.x,state.y),std::make_pair<Point2D,Point2D>(Point2D(-3,2), Point2D(12,2)));
+                        double robot_dist_left = left_proj.second;
+                        auto right_proj = project_to_line_segment(Point2D(state.x,state.y),std::make_pair<Point2D,Point2D>(Point2D(-3,-2), Point2D(12,-2)));
+                        double robot_dist_right = right_proj.second;
+                        if(curr_goal < 1)
+                        {
+                            if(direction_preference.first == LEFT) {
+                                sample_point.y =
+                                        (std::fabs(detected_obstacles.at(i).y) + std::fabs(left_proj.first.y)) / 2;
+                            } else
+                            {
+                                sample_point.y = -(std::fabs(detected_obstacles.at(i).y) + std::fabs(right_proj.first.y)) / 2;
+                            }
+                        }
+                        else{
+                            if(direction_preference.second == LEFT) {
+                                sample_point.y =
+                                        (std::fabs(detected_obstacles.at(i).y) + std::fabs(left_proj.first.y)) / 2;
+                            } else
+                            {
+                                sample_point.y = -(std::fabs(detected_obstacles.at(i).y) + std::fabs(right_proj.first.y)) / 2;
+                            }
+                        }
+                    }
+                    else if(dist_left <= dist_right)
+                    {
+                        sample_point.y = sample_point.y - OBSTACLE_BUFFER/2;
+                    } else{
+                        sample_point.y = sample_point.y + OBSTACLE_BUFFER/2;
+                    }
+                }
+            }
+            path.poses.push_back(point(sample_point,SET_SPEED));
+            curr_dist += SAMPLE_STEP_SIZE;
+        }
+        return path;
+    }
+
+    void process()
+    {
+        if(distance(robot_pose,goals.at(curr_goal)) < GOAL_DISTANCE_ACCEPTENCE)
+        {
+            curr_goal++;
+        }
+        if(curr_goal == goals.size())
+        {
+            while(true)
+            {
+                nav_msgs::Path stop;
+                geometry_msgs::PoseStamped zero;
+                zero.header.frame_id = "map";
+                zero.header.stamp = ros::Time::now();
+                zero.pose.position.x = robot_pose.x;
+                zero.pose.position.y = robot_pose.y;
+                zero.pose.position.z = 0;
+                geometry_msgs::PoseStamped zero2;
+                zero2.header.frame_id = "map";
+                zero2.header.stamp = ros::Time::now();
+                zero2.pose.position.x = robot_pose.x + 1;
+                zero2.pose.position.y = robot_pose.y + 1;
+                zero2.pose.position.z = 0;
+                stop.poses.push_back(zero);
+                stop.poses.push_back(zero);
+                publish_path(stop);
+            }
+        }
+        nav_msgs::Path path = get_path(robot_pose, goals.at(curr_goal), detected_obstacles);
+        publish_path(path);
+    }
+
+private:
+
+    void receive_pose(const geometry_msgs::Pose2D::ConstPtr& pose)
+    {
+        robot_pose = *pose;
+        if(!pose_initialized)
+        {
+            pose_initialized = true;
+        }
+
+    }
+
+    void receive_obstacles(const visualization_msgs::MarkerArray::ConstPtr& obstacles)
+    {
+        std::vector<Point2D> obstacle_vec;
+
+        for(const auto& o : obstacles->markers)
+        {
+            obstacle_vec.emplace_back(Point2D(o.pose.position.x, o.pose.position.y));
+        }
+
+        detected_obstacles = obstacle_vec;
+    }
+
+    void publish_path(nav_msgs::Path& path)
+    {
+        path.header.frame_id = "map";
+        path.header.stamp = ros::Time::now();
+        path_pub.publish(path);
+    }
+
+    bool pose_initialized;
+    unsigned long curr_goal;
+    std::pair<int,int> direction_preference;
+    std::vector<Point2D> goals;
+    std::vector<Point2D> detected_obstacles;
+    geometry_msgs::Pose2D robot_pose;
+    ros::NodeHandle n;
+    ros::Publisher path_pub;
+    ros::Subscriber pose_sub;
+    ros::Subscriber obstacle_sub;
+
+};
 
 int main(int argc, char **argv) {
 
     ros::init(argc, argv, "path_planning_node");
 
-    ros::NodeHandle n;
+    std::vector<Point2D> goals =  {{11,0}/*,{11,1.01}*/,{-1,0}};
 
-    ros::Publisher path_pub = n.advertise<nav_msgs::Path>("path", 100);
+    PathPlanner planner(Point2D(0,0), goals);
 
-    ros::Rate loop_rate(1);
+    ros::Rate loop_rate(10);
 
-    std::vector<PoseStamped> poses;
-
-    nav_msgs::Path path;
-    path.header.frame_id = "map";
-    path.header.stamp = ros::Time::now();
-
-    /*poses.push_back(point(-7.5, 0, 0.3));
-    poses.push_back(point(-6.5, 0, 0.3));
-    poses.push_back(point(-2.5,-1,0.3));
-    poses.push_back(point(0, -1, 0.3));
-    poses.push_back(point(1, -1, 0.3));
-    poses.push_back(point(2, -1, 0.3));
-    poses.push_back(point(4, -1, 0.3));
-    poses.push_back(point(5.5, -1, 0.3));
-    poses.push_back(point(5.5, 1, 0.3));
-    poses.push_back(point(5, 1, 0.3));
-    poses.push_back(point(4, 1, 0.3));
-    poses.push_back(point(1, 1, 0.3));
-    poses.push_back(point(0.5, 1, 0.3));
-    poses.push_back(point(-6.2, 1, 0.3));
-    poses.push_back(point(-6.5, 1, 0.0));*/
-
-/* Path around high bay from computer */
-    /* poses.push_back(point(0.4, 0, SET_SPEED));
-     poses.push_back(point(1.9, .1, SET_SPEED));
-     poses.push_back(point(3, 0.7, SET_SPEED));
-     poses.push_back(point(4.1, 1.6, SET_SPEED));
-     poses.push_back(point(5.4, 2.6, SET_SPEED));
-     poses.push_back(point(7.1, 3.5, SET_SPEED));
-     poses.push_back(point(10.4, 5.7, SET_SPEED));
-     poses.push_back(point(12.7, 8, SET_SPEED));
-     poses.push_back(point(15, 10.2, SET_SPEED));
-     poses.push_back(point(16.2, 12.7, SET_SPEED));
-     poses.push_back(point(16.4, 14, SET_SPEED));
-     poses.push_back(point(15, 16.9, SET_SPEED));
-     poses.push_back(point(14.1, 18.1, SET_SPEED));
-     poses.push_back(point(13.1, 19.0, SET_SPEED));
-     poses.push_back(point(11.3, 19.7, SET_SPEED));
-     poses.push_back(point(9.7, 19.6, SET_SPEED));
-     poses.push_back(point(7.6, 17.3, 0));
- */
-
-    /*
-    poses.push_back(point(2.485,-.727 ,0.3));
-    poses.push_back(point(5.730, -2.107 ,0.3));
-    poses.push_back(point(4.505, -8.191 ,0.3));
-    poses.push_back(point( 8.029, -1.809 ,0.3));
-    poses.push_back(point( 6.472, -0.588 ,0.3));
-    poses.push_back(point(10.742, -8.873, 0.3));
-    poses.push_back(point(11.041, -2.696,0.3));
-    poses.push_back(point(7.998, 1.256 ,0.3));
-    poses.push_back(point(12.29,1.180,0.3));
-     */
-
-    /*poses.push_back(point(2,-0.1,0.3));
-        poses.push_back(point(8,-0.5,0.3));
-            poses.push_back(point(8.5,-1,0.3));
-                poses.push_back(point(8.5,-2,0.3));
-                    poses.push_back(point(7.5,-3,0.3));
-                        poses.push_back(point(2,-3,0.3));*/
-
-//around highbay
-/*
-    poses.push_back(point(0,0,SET_SPEED));
-    poses.push_back(point(3.0,0.62,SET_SPEED));
-    poses.push_back(point(5.3,2.1,SET_SPEED));
-    poses.push_back(point(7.0,4.6,SET_SPEED));
-    poses.push_back(point(7.6,7.1,SET_SPEED));
-    poses.push_back(point(7.1,10.1,SET_SPEED));
-    poses.push_back(point(5.3,12.7,SET_SPEED));
-    poses.push_back(point(3.0,13.6,SET_SPEED));
-    poses.push_back(point(-2.3,14.1,SET_SPEED));
-    poses.push_back(point(-5.1,12.6,SET_SPEED));
-poses.push_back(point(-6.6,10.4,SET_SPEED));
-poses.push_back(point(-7.4,7.7,SET_SPEED));
-poses.push_back(point(-6.8,3.9,SET_SPEED));
-poses.push_back(point(-6.3,3.9,SET_SPEED));
-poses.push_back(point(-3.14,1,SET_SPEED));
-poses.push_back(point(0,0,SET_SPEED));
-*/
-//test moving around obstacles
-    poses.push_back(point(0, 0, SET_SPEED));
-    poses.push_back(point(1.0, 0, SET_SPEED));
-    poses.push_back(point(1.6, -0.05, SET_SPEED));
-    poses.push_back(point(2.11, -0.05, SET_SPEED));
-    poses.push_back(point(2.65, -0.48, SET_SPEED));
-    poses.push_back(point(3.65, -0.89, SET_SPEED));
-    poses.push_back(point(4.35, -0.92, SET_SPEED));
-    poses.push_back(point(5.275, -0.36, SET_SPEED));
-    poses.push_back(point(6.6, -0.414, SET_SPEED));
-    poses.push_back(point(6.75, 0.2, SET_SPEED));
-    poses.push_back(point(5.67, 0.404, SET_SPEED));
-    poses.push_back(point(4.72, 0.84, SET_SPEED));
-    poses.push_back(point(3.15, 0.219, SET_SPEED));
-    poses.push_back(point(0.5, 0.3, SET_SPEED));
-
-    path.poses.resize(poses.size());
-    for (int i = 0; i < poses.size(); ++i) {
-        PoseStamped p = poses.at(i);
-        path.poses.at(i) = p;
-    }
-
-    int count = 0;
-    while (ros::ok()) {
-
-        path_pub.publish(path);
-        count++;
-        std::cout << "sent" << std::endl;
+    while(ros::ok())
+    {
+        planner.process();
         ros::spinOnce();
-
         loop_rate.sleep();
     }
 
