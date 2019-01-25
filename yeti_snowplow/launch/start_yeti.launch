@@ -33,7 +33,11 @@
     <node pkg="state_publisher" name="state_publisher" type="state_publisher_node"/>
 
     <!-- Obstacle Detection -->
-    <node pkg="obstacle_detection" name="obstacle_detection" type="obstacle_detection_node"/>
+    <node pkg="obstacle_detection" name="obstacle_detection" type="obstacle_detection_node">
+        <param name="filter_x_size" value="9.0"/>
+        <!--<param name="scan_start_index" value="180"/>
+        <param name="scan_end_index" value="900"/>-->
+    </node>
 
     <!-- PID Controller -->
     <node pkg="control_publisher" name="control_publisher" type="control_publisher_node"/>
@@ -45,7 +49,7 @@
         <param name="topic_from_plant" value="linear_velocity"/>
         <param name="topic_from_controller" value="linear_control_effort"/>
         <param name="upper_limit" value="1"/>
-        <param name="lower_limit" value="-1"/>
+        <param name="lower_limit" value="-0.5"/>
         <param name="windup_limit" value="1"/>
         <param name="max_loop_frequency" value="100.0"/>
         <param name="min_loop_frequency" value="100.0"/>
