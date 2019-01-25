@@ -57,7 +57,7 @@
         <param name="min_loop_frequency" value="100.0"/>
     </node>
     <node pkg="pid" name="rotation_pid" type="controller">
-        <param name="Kp" value="10.0"/>
+        <param name="Kp" value="20.0"/>
         <param name="Ki" value="10.0"/>
         <param name="Kd" value="0.0"/>
         <param name="setpoint_topic" value="rotation_setpoint"/>
@@ -77,9 +77,7 @@
     <node pkg="path_tracking" name="pure_pursuit" type="pure_pursuit_node"/>
     <param name="publish_lookahead" value="true"/>
     <remap from="pure_pursuit/heading_to_point" to="rotation_setpoint"/>
-    <node pkg="path_planning" name="path_planning_node" type="path_planning_node" >
-
-    </node>
+    <node pkg="path_planning" name="path_planning_node" type="path_planning_node" />
 
     <!-- Rviz -->
     <param name="robot_description" textfile="$(find yeti_snowplow)/models/yeti/model.urdf"/>
