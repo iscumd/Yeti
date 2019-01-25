@@ -126,6 +126,10 @@ public:
         path_pub = n.advertise<nav_msgs::Path>("path", 100);
         pose_sub = n.subscribe("/yeti/pose",1, &PathPlanner::receive_pose, this);
         obstacle_sub = n.subscribe("obstacle_detection/obstacles",1,&PathPlanner::receive_obstacles, this);
+        n.param<double>("set_speed", set_speed, SET_SPEED);
+        n.param<double>("obstacle_buffer", obstacle_buffer, OBSTACLE_BUFFER);
+        n.param<double>("goal_acceptance_distance",goal_acceptance_distance, GOAL_DISTANCE_ACCEPTENCE);
+
     }
 
     nav_msgs::Path get_path(const geometry_msgs::Pose2D& state, const Point2D& goal_point, std::vector<Point2D> obstacles)
@@ -143,19 +147,19 @@ public:
 
         Eigen::ParametrizedLine<double, 2> line = line.Through( state_vec, goal_vec);
         double curr_dist = 0;
-        while(distance(sample_point, goal_point) > GOAL_DISTANCE_ACCEPTENCE)
+        while(distance(sample_point, goal_point) > goal_acceptance_distance)
         {
             auto p = line.pointAt(curr_dist);
             sample_point.x = p.data()[0];
             sample_point.y = p.data()[1];
             for(ulong i = 0; i < detected_obstacles.size(); ++i){
-                if(distance(sample_point, detected_obstacles.at(i)) < OBSTACLE_BUFFER)
+                if(distance(sample_point, detected_obstacles.at(i)) < obstacle_buffer)
                 {
                     bool left = false, right = false;
                     double dist_left, dist_right;
                     dist_left = project_to_line_segment(detected_obstacles.at(i),std::make_pair<Point2D,Point2D>(Point2D(-3,2), Point2D(12,2))).second;
                     dist_right = project_to_line_segment(detected_obstacles.at(i),std::make_pair<Point2D,Point2D>(Point2D(-3,-2), Point2D(12,-2))).second;
-                    if(dist_left > OBSTACLE_BUFFER && dist_right > OBSTACLE_BUFFER)
+                    if(dist_left > obstacle_buffer && dist_right > obstacle_buffer)
                     {
                         auto left_proj = project_to_line_segment(Point2D(state.x,state.y),std::make_pair<Point2D,Point2D>(Point2D(-3,2), Point2D(12,2)));
                         double robot_dist_left = left_proj.second;
@@ -183,13 +187,13 @@ public:
                     }
                     else if(dist_left <= dist_right)
                     {
-                        sample_point.y = sample_point.y - OBSTACLE_BUFFER/2;
+                        sample_point.y = sample_point.y - obstacle_buffer/2;
                     } else{
-                        sample_point.y = sample_point.y + OBSTACLE_BUFFER/2;
+                        sample_point.y = sample_point.y + obstacle_buffer/2;
                     }
                 }
             }
-            path.poses.push_back(point(sample_point,SET_SPEED));
+            path.poses.push_back(point(sample_point,set_speed));
             curr_dist += SAMPLE_STEP_SIZE;
         }
         return path;
@@ -197,7 +201,7 @@ public:
 
     void process()
     {
-        if(distance(robot_pose,goals.at(curr_goal)) < GOAL_DISTANCE_ACCEPTENCE)
+        if(distance(robot_pose,goals.at(curr_goal)) < goal_acceptance_distance)
         {
             curr_goal++;
         }
@@ -260,6 +264,9 @@ private:
 
     bool pose_initialized;
     unsigned long curr_goal;
+    double set_speed;
+    double obstacle_buffer;
+    double goal_acceptance_distance;
     std::pair<int,int> direction_preference;
     std::vector<Point2D> goals;
     std::vector<Point2D> detected_obstacles;
