@@ -59,7 +59,6 @@
 		<param name="min_loop_frequency" value="100.0" />
 		<param name="angle_error" value="true"/>
 	</node>
-
 	<node pkg="pid" name="rotation_velocity_pid" type="controller">
 		<param name="Kp" value="0.185" />
 		<param name="Ki" value="0.7094" />
