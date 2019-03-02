@@ -104,3 +104,7 @@ CATKIN_IGNORE
 
 # VS Code files
 .vscode
+
+# Clion files
+cmake-build-debug
+.idea

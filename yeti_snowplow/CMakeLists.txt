@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(yeti_snowplow)
-
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
 # compile with C++11
 # https://github.com/ros-planning/geometric_shapes/pull/50#issuecomment-236972774
 add_compile_options("-std=c++11")
