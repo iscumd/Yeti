@@ -1,3 +1,18 @@
-[submodule "path_tracking/external/pure_pursuit"]
-	path = path_tracking/external/pure_pursuit
-	url = https://github.com/iscumd/pure_pursuit
+[submodule "guidance/path_recorder"]
+	path = guidance/path_recorder
+	url = https://github.com/iscumd/path_recorder.git
+[submodule "guidance/path_planning"]
+	path = guidance/path_planning
+	url = https://github.com/iscumd/path_planning.git
+[submodule "navigation/lvt"]
+	path = navigation/lvt
+	url = https://github.com/iscumd/lvt.git
+[submodule "perception/ros_lidar_obstacle_detection"]
+	path = perception/ros_lidar_obstacle_detection
+	url = https://github.com/iscumd/ros_lidar_obstacle_detection.git
+[submodule "perception/zed_opencv_ros"]
+	path = perception/zed_opencv_ros
+	url = https://github.com/iscumd/zed_opencv_ros.git
+[submodule "guidance/path_tracking"]
+	path = guidance/path_tracking
+	url = https://github.com/iscumd/path_tracking.git
